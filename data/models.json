@@ -1,0 +1,571 @@
+{
+  "version": 1,
+  "generatedAt": "2026-11-15T21:04:23.754Z",
+  "currency": "USD",
+  "unit": "per_1m_tokens",
+  "sources": {
+    "litellm": {
+      "url": "https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json",
+      "fetchedAt": "2026-11-15T21:04:23.754Z"
+    },
+    "openrouter": {
+      "url": "https://openrouter.ai/api/v1/models",
+      "fetchedAt": "2026-11-15T21:04:23.754Z"
+    }
+  },
+  "models": [
+    {
+      "id": "claude-fable-5-1",
+      "name": "Claude Fable 5.1",
+      "provider": "anthropic",
+      "tier": "flagship",
+      "featured": false,
+      "legacy": false,
+      "tokenizer": "claude",
+      "contextWindow": 1000000,
+      "maxOutput": 128000,
+      "input": 10,
+      "output": 50,
+      "cachedInput": 0.25,
+      "cacheWrite": 12.5,
+      "source": "litellm",
+      "sourceUrl": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "openrouter": {
+        "id": "anthropic/claude-fable-5.1",
+        "input": 10,
+        "output": 50,
+        "cachedInput": 0.25,
+        "cacheWrite": 12.5
+      }
+    },
+    {
+      "id": "claude-opus-5-5",
+      "name": "Claude Opus 5.5",
+      "provider": "anthropic",
+      "tier": "flagship",
+      "featured": true,
+      "legacy": false,
+      "tokenizer": "claude",
+      "contextWindow": 1000000,
+      "maxOutput": 128000,
+      "input": 4,
+      "output": 20,
+      "cachedInput": 0.2,
+      "cacheWrite": 5,
+      "source": "litellm",
+      "sourceUrl": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "openrouter": {
+        "id": "anthropic/claude-opus-5.5",
+        "input": 4,
+        "output": 20,
+        "cachedInput": 0.2,
+        "cacheWrite": 5
+      }
+    },
+    {
+      "id": "claude-sonnet-5-5",
+      "name": "Claude Sonnet 5.5",
+      "provider": "anthropic",
+      "tier": "mid",
+      "featured": true,
+      "legacy": false,
+      "tokenizer": "claude",
+      "contextWindow": 1000000,
+      "maxOutput": 128000,
+      "input": 2,
+      "output": 10,
+      "cachedInput": 0.1,
+      "cacheWrite": 2.5,
+      "source": "litellm",
+      "sourceUrl": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "openrouter": {
+        "id": "anthropic/claude-sonnet-5.5",
+        "input": 2,
+        "output": 10,
+        "cachedInput": 0.1,
+        "cacheWrite": 2.5
+      }
+    },
+    {
+      "id": "claude-haiku-5-5",
+      "name": "Claude Haiku 5.5",
+      "provider": "anthropic",
+      "tier": "cheap",
+      "featured": true,
+      "legacy": false,
+      "tokenizer": "claude",
+      "contextWindow": 1000000,
+      "maxOutput": 128000,
+      "input": 0.1,
+      "output": 0.5,
+      "cachedInput": 0.01,
+      "cacheWrite": 0.125,
+      "tiers": [
+        {
+          "above": 100000,
+          "input": 0.5,
+          "output": 2.5,
+          "cachedInput": 0.05,
+          "cacheWrite": 0.625
+        }
+      ],
+      "source": "litellm",
+      "sourceUrl": "https://platform.claude.com/docs/en/models/haiku-5-5/overview",
+      "openrouter": {
+        "id": "anthropic/claude-haiku-5.5",
+        "input": 0.1,
+        "output": 0.5,
+        "cachedInput": 0.01,
+        "cacheWrite": 0.125,
+        "tiers": [
+          {
+            "above": 100000,
+            "input": 0.5,
+            "output": 2.5,
+            "cachedInput": 0.05,
+            "cacheWrite": 0.625
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude-opus-4-8",
+      "name": "Claude Opus 4.8",
+      "provider": "anthropic",
+      "tier": "flagship",
+      "featured": false,
+      "legacy": true,
+      "tokenizer": "claude",
+      "contextWindow": 1000000,
+      "maxOutput": 128000,
+      "input": 5,
+      "output": 25,
+      "cachedInput": 0.5,
+      "cacheWrite": 6.25,
+      "source": "litellm",
+      "sourceUrl": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "openrouter": {
+        "id": "anthropic/claude-opus-4.8",
+        "input": 5,
+        "output": 25,
+        "cachedInput": 0.5,
+        "cacheWrite": 6.25
+      }
+    },
+    {
+      "id": "claude-sonnet-4-6",
+      "name": "Claude Sonnet 4.6",
+      "provider": "anthropic",
+      "tier": "mid",
+      "featured": false,
+      "legacy": true,
+      "tokenizer": "claude",
+      "contextWindow": 1000000,
+      "maxOutput": 128000,
+      "input": 3,
+      "output": 15,
+      "cachedInput": 0.3,
+      "cacheWrite": 3.75,
+      "source": "litellm",
+      "sourceUrl": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "openrouter": {
+        "id": "anthropic/claude-sonnet-4.6",
+        "input": 3,
+        "output": 15,
+        "cachedInput": 0.3,
+        "cacheWrite": 3.75
+      }
+    },
+    {
+      "id": "claude-haiku-4-5",
+      "name": "Claude Haiku 4.5",
+      "provider": "anthropic",
+      "tier": "cheap",
+      "featured": false,
+      "legacy": true,
+      "tokenizer": "claude",
+      "contextWindow": 200000,
+      "maxOutput": 64000,
+      "input": 1,
+      "output": 5,
+      "cachedInput": 0.1,
+      "cacheWrite": 1.25,
+      "source": "litellm",
+      "sourceUrl": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "openrouter": {
+        "id": "anthropic/claude-haiku-4.5",
+        "input": 1,
+        "output": 5,
+        "cachedInput": 0.1,
+        "cacheWrite": 1.25
+      }
+    },
+    {
+      "id": "gpt-6-astra",
+      "name": "GPT-6 Astra",
+      "provider": "openai",
+      "tier": "flagship",
+      "featured": false,
+      "legacy": false,
+      "tokenizer": "o200k",
+      "contextWindow": 1050000,
+      "maxOutput": 128000,
+      "input": 10,
+      "output": 50,
+      "cachedInput": 1,
+      "cacheWrite": 12.5,
+      "tiers": [
+        {
+          "above": 272000,
+          "input": 20,
+          "output": 75,
+          "cachedInput": 2,
+          "cacheWrite": 25
+        }
+      ],
+      "source": "litellm",
+      "sourceUrl": "https://developers.openai.com/api/docs/pricing",
+      "openrouter": {
+        "id": "openai/gpt-6-astra",
+        "input": 10,
+        "output": 50,
+        "cachedInput": 1,
+        "cacheWrite": 12.5,
+        "tiers": [
+          {
+            "above": 272000,
+            "input": 20,
+            "output": 75,
+            "cachedInput": 2,
+            "cacheWrite": 25
+          }
+        ]
+      }
+    },
+    {
+      "id": "gpt-6.1-sol",
+      "name": "GPT-6.1 Sol",
+      "provider": "openai",
+      "tier": "mid",
+      "featured": true,
+      "legacy": false,
+      "tokenizer": "o200k",
+      "contextWindow": 1050000,
+      "maxOutput": 128000,
+      "input": 2,
+      "output": 10,
+      "cachedInput": 0.1,
+      "cacheWrite": 2.5,
+      "tiers": [
+        {
+          "above": 272000,
+          "input": 4,
+          "output": 15,
+          "cachedInput": 0.2,
+          "cacheWrite": 5
+        }
+      ],
+      "source": "litellm",
+      "sourceUrl": "https://developers.openai.com/api/docs/pricing",
+      "openrouter": {
+        "id": "openai/gpt-6.1-sol",
+        "input": 2,
+        "output": 10,
+        "cachedInput": 0.1,
+        "cacheWrite": 2.5,
+        "tiers": [
+          {
+            "above": 272000,
+            "input": 4,
+            "output": 15,
+            "cachedInput": 0.2,
+            "cacheWrite": 5
+          }
+        ]
+      }
+    },
+    {
+      "id": "gpt-6.1-terra",
+      "name": "GPT-6.1 Terra",
+      "provider": "openai",
+      "tier": "mid",
+      "featured": false,
+      "legacy": false,
+      "tokenizer": "o200k",
+      "contextWindow": 1050000,
+      "maxOutput": 128000,
+      "input": 1,
+      "output": 5,
+      "cachedInput": 0.05,
+      "cacheWrite": 1.25,
+      "tiers": [
+        {
+          "above": 272000,
+          "input": 2,
+          "output": 7.5,
+          "cachedInput": 0.1,
+          "cacheWrite": 2.5
+        }
+      ],
+      "source": "litellm",
+      "sourceUrl": "https://developers.openai.com/api/docs/pricing",
+      "openrouter": {
+        "id": "openai/gpt-6.1-terra",
+        "input": 1,
+        "output": 5,
+        "cachedInput": 0.05,
+        "cacheWrite": 1.25,
+        "tiers": [
+          {
+            "above": 272000,
+            "input": 2,
+            "output": 7.5,
+            "cachedInput": 0.1,
+            "cacheWrite": 2.5
+          }
+        ]
+      }
+    },
+    {
+      "id": "gpt-6-luna",
+      "name": "GPT-6 Luna",
+      "provider": "openai",
+      "tier": "cheap",
+      "featured": true,
+      "legacy": false,
+      "tokenizer": "o200k",
+      "contextWindow": 1050000,
+      "maxOutput": 128000,
+      "input": 0.1,
+      "output": 0.5,
+      "cachedInput": 0.01,
+      "cacheWrite": 0.125,
+      "tiers": [
+        {
+          "above": 272000,
+          "input": 0.2,
+          "output": 0.75,
+          "cachedInput": 0.02,
+          "cacheWrite": 0.25
+        }
+      ],
+      "source": "litellm",
+      "sourceUrl": "https://developers.openai.com/api/docs/pricing",
+      "openrouter": {
+        "id": "openai/gpt-6-luna",
+        "input": 0.1,
+        "output": 0.5,
+        "cachedInput": 0.01,
+        "cacheWrite": 0.125,
+        "tiers": [
+          {
+            "above": 272000,
+            "input": 0.2,
+            "output": 0.75,
+            "cachedInput": 0.02,
+            "cacheWrite": 0.25
+          }
+        ]
+      }
+    },
+    {
+      "id": "gemini-4-argon",
+      "name": "Gemini 4 Argon",
+      "provider": "google",
+      "tier": "flagship",
+      "featured": true,
+      "legacy": false,
+      "tokenizer": "gemini",
+      "contextWindow": 1048576,
+      "maxOutput": 1048576,
+      "input": 2,
+      "output": 10,
+      "cachedInput": 0.1,
+      "validUntil": "2026-11-30",
+      "nextPrice": {
+        "from": "2026-12-01",
+        "input": 4,
+        "output": 20,
+        "cachedInput": 0.2
+      },
+      "source": "litellm",
+      "sourceUrl": "https://ai.google.dev/gemini-api/docs/pricing",
+      "openrouter": {
+        "id": "google/gemini-4-argon",
+        "input": 2,
+        "output": 10,
+        "cachedInput": 0.1,
+        "cacheWrite": 0.1875
+      },
+      "note": "Alta de preço em 01/12 vista em agregadores; confirmar em ai.google.dev/pricing."
+    },
+    {
+      "id": "gemini-4-carbon",
+      "name": "Gemini 4 Carbon",
+      "provider": "google",
+      "tier": "flagship",
+      "featured": false,
+      "legacy": false,
+      "tokenizer": "gemini",
+      "contextWindow": 1048576,
+      "maxOutput": 1048576,
+      "input": 2,
+      "output": 10,
+      "cachedInput": 0.1,
+      "source": "litellm",
+      "sourceUrl": "https://aistudio.google.com/docs/pricing#gemini-4-carbon",
+      "openrouter": {
+        "id": "google/gemini-4-carbon",
+        "input": 2,
+        "output": 10,
+        "cachedInput": 0.1,
+        "cacheWrite": 0.1875
+      }
+    },
+    {
+      "id": "gemini-3.8-flash",
+      "name": "Gemini 3.8 Flash",
+      "provider": "google",
+      "tier": "mid",
+      "featured": true,
+      "legacy": false,
+      "tokenizer": "gemini",
+      "contextWindow": 1048576,
+      "maxOutput": 65536,
+      "input": 0.75,
+      "output": 3.75,
+      "cachedInput": 0.075,
+      "source": "litellm",
+      "sourceUrl": "https://ai.google.dev/gemini-api/docs/pricing",
+      "priceConflict": {
+        "openrouter": {
+          "input": 0.825,
+          "output": 4.125
+        },
+        "diffPct": 9.1
+      },
+      "openrouter": {
+        "id": "google/gemini-3.8-flash",
+        "input": 0.825,
+        "output": 4.125,
+        "cachedInput": 0.0825,
+        "cacheWrite": 0.041667
+      }
+    },
+    {
+      "id": "deepseek-v4-pro",
+      "name": "DeepSeek V4 Pro",
+      "provider": "deepseek",
+      "tier": "mid",
+      "featured": false,
+      "legacy": false,
+      "tokenizer": "estimate",
+      "contextWindow": 1048576,
+      "maxOutput": 393216,
+      "input": 1.32,
+      "output": 3.96,
+      "cachedInput": 0.044,
+      "cacheWrite": 0,
+      "source": "litellm",
+      "sourceUrl": "https://api-docs.deepseek.com/quick_start/pricing",
+      "priceConflict": {
+        "openrouter": {
+          "input": 0.9,
+          "output": 1.5
+        },
+        "diffPct": 62.1
+      },
+      "openrouter": {
+        "id": "deepseek/deepseek-v4-pro",
+        "input": 0.9,
+        "output": 1.5,
+        "cachedInput": 0.25
+      }
+    },
+    {
+      "id": "deepseek-v4-flash",
+      "name": "DeepSeek V4 Flash",
+      "provider": "deepseek",
+      "tier": "cheap",
+      "featured": true,
+      "legacy": false,
+      "tokenizer": "estimate",
+      "contextWindow": 1048576,
+      "maxOutput": 393216,
+      "input": 0.3,
+      "output": 1.2,
+      "cachedInput": 0.006,
+      "cacheWrite": 0,
+      "source": "litellm",
+      "sourceUrl": "https://api-docs.deepseek.com/quick_start/pricing",
+      "priceConflict": {
+        "openrouter": {
+          "input": 0.09,
+          "output": 0.18
+        },
+        "diffPct": 85
+      },
+      "openrouter": {
+        "id": "deepseek/deepseek-v4-flash",
+        "input": 0.09,
+        "output": 0.18,
+        "cachedInput": 0.018
+      }
+    },
+    {
+      "id": "qwen/qwen3.7-flash",
+      "name": "Qwen3.7 Flash",
+      "provider": "qwen",
+      "tier": "cheap",
+      "featured": false,
+      "legacy": false,
+      "tokenizer": "estimate",
+      "contextWindow": 1000000,
+      "maxOutput": 65536,
+      "input": 0.03,
+      "output": 0.13,
+      "cachedInput": 0.006,
+      "cacheWrite": 0.038,
+      "tiers": [
+        {
+          "above": 32000,
+          "input": 0.1,
+          "output": 0.4,
+          "cachedInput": 0.02,
+          "cacheWrite": 0.125
+        },
+        {
+          "above": 256000,
+          "input": 0.2,
+          "output": 0.8,
+          "cachedInput": 0.04,
+          "cacheWrite": 0.25
+        }
+      ],
+      "source": "openrouter",
+      "openrouter": {
+        "id": "qwen/qwen3.7-flash",
+        "input": 0.03,
+        "output": 0.13,
+        "cachedInput": 0.006,
+        "cacheWrite": 0.038,
+        "tiers": [
+          {
+            "above": 32000,
+            "input": 0.1,
+            "output": 0.4,
+            "cachedInput": 0.02,
+            "cacheWrite": 0.125
+          },
+          {
+            "above": 256000,
+            "input": 0.2,
+            "output": 0.8,
+            "cachedInput": 0.04,
+            "cacheWrite": 0.25
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "$comment": "Catálogo curado do Neurix. Os PREÇOS vêm do LiteLLM/OpenRouter (scripts/build-prices.ts); aqui ficam só os dados que nenhuma fonte tem: faixa, destaque, legacy, tokenizer e mudanças de preço com data. Use litellmKey/openrouterId quando a convenção de nome não encontrar o modelo.",
+  "models": [
+    { "id": "claude-fable-5-1", "provider": "anthropic", "tier": "flagship" },
+    { "id": "claude-opus-5-5", "provider": "anthropic", "tier": "flagship", "featured": true },
+    { "id": "claude-sonnet-5-5", "provider": "anthropic", "tier": "mid", "featured": true },
+    { "id": "claude-haiku-5-5", "provider": "anthropic", "tier": "cheap", "featured": true },
+    { "id": "claude-opus-4-8", "provider": "anthropic", "tier": "flagship", "legacy": true },
+    { "id": "claude-sonnet-4-6", "provider": "anthropic", "tier": "mid", "legacy": true },
+    { "id": "claude-haiku-4-5", "provider": "anthropic", "tier": "cheap", "legacy": true },
+
+    { "id": "gpt-6-astra", "provider": "openai", "tier": "flagship" },
+    { "id": "gpt-6.1-sol", "provider": "openai", "tier": "mid", "featured": true },
+    { "id": "gpt-6.1-terra", "provider": "openai", "tier": "mid" },
+    { "id": "gpt-6-luna", "provider": "openai", "tier": "cheap", "featured": true },
+
+    {
+      "id": "gemini-4-argon",
+      "provider": "google",
+      "tier": "flagship",
+      "featured": true,
+      "validUntil": "2026-11-30",
+      "nextPrice": { "from": "2026-12-01", "input": 4.0, "output": 20.0, "cachedInput": 0.2 },
+      "note": "Alta de preço em 01/12 vista em agregadores; confirmar em ai.google.dev/pricing."
+    },
+    { "id": "gemini-4-carbon", "provider": "google", "tier": "flagship" },
+    { "id": "gemini-3.8-flash", "provider": "google", "tier": "mid", "featured": true },
+
+    { "id": "deepseek-v4-pro", "provider": "deepseek", "tier": "mid", "name": "DeepSeek V4 Pro" },
+    { "id": "deepseek-v4-flash", "provider": "deepseek", "tier": "cheap", "featured": true, "name": "DeepSeek V4 Flash" },
+
+    { "id": "qwen3.7-flash", "provider": "qwen", "tier": "cheap" }
+  ]
+}

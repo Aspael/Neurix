@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="704" height="334" viewBox="0 0 704 334" xml:space="preserve">
+  <defs>
+    <linearGradient id="bar" x1="0" x2="1"><stop offset="0" stop-color="#22d3ee" stop-opacity=".18"/><stop offset="1" stop-color="#e879f9" stop-opacity=".18"/></linearGradient>
+    <linearGradient id="prog" x1="0" x2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset=".5" stop-color="#8b5cf6"/><stop offset="1" stop-color="#f472b6"/></linearGradient>
+  </defs>
+  <rect width="704" height="334" rx="12" fill="#16161e"/>
+  <rect width="704" height="38" rx="12" fill="url(#bar)"/>
+  <rect y="26" width="704" height="12" fill="#16161e"/>
+  <circle cx="22" cy="19" r="6" fill="#ff5f57"/><circle cx="42" cy="19" r="6" fill="#febc2e"/><circle cx="62" cy="19" r="6" fill="#28c840"/>
+  <g font-family="Cascadia Mono, SF Mono, Menlo, Consolas, DejaVu Sans Mono, monospace" font-size="14">
+    <text x="352" y="24" text-anchor="middle" fill="#a1a1aa" font-family="ui-sans-serif, Segoe UI, Helvetica, Arial, sans-serif" font-size="13">neurix "…"</text>
+    <text y="58"></text>
+    <text y="77"><tspan x="20.0" fill="#d4d4d8" font-weight="700">📊 Neurix — comparativo</tspan><tspan x="230.0" fill="#d4d4d8" opacity="0.6">120 caracteres · ~35 tokens de entrada · ~300 de saída</tspan></text>
+    <text y="96"><tspan x="20.0" fill="#d4d4d8" opacity="0.6">Modelo</tspan><tspan x="179.6" fill="#d4d4d8" opacity="0.6">Entrada/1M</tspan><tspan x="288.8" fill="#d4d4d8" opacity="0.6">Saída/1M</tspan><tspan x="398.0" fill="#d4d4d8" opacity="0.6">Total US$</tspan><tspan x="515.6" fill="#d4d4d8" opacity="0.6">Total R$</tspan><tspan x="599.6" fill="#d4d4d8" opacity="0.6">Contexto</tspan></text>
+    <text y="115"><tspan x="20.0" fill="#d4d4d8">Claude Haiku 5.5</tspan><tspan x="196.4" fill="#d4d4d8">US$ 0,10</tspan><tspan x="288.8" fill="#d4d4d8">US$ 0,50</tspan><tspan x="372.8" fill="#d4d4d8">US$ 0,000154</tspan><tspan x="490.4" fill="#4ade80">R$ 0,000829</tspan><tspan x="650.0" fill="#d4d4d8">1M</tspan></text>
+    <text y="134"><tspan x="20.0" fill="#d4d4d8">GPT-6 Luna</tspan><tspan x="196.4" fill="#d4d4d8">US$ 0,10</tspan><tspan x="288.8" fill="#d4d4d8">US$ 0,50</tspan><tspan x="372.8" fill="#d4d4d8">US$ 0,000154</tspan><tspan x="490.4" fill="#4ade80">R$ 0,000829</tspan><tspan x="624.8" fill="#d4d4d8">1.05M</tspan></text>
+    <text y="153"><tspan x="20.0" fill="#d4d4d8">DeepSeek V4 Flash</tspan><tspan x="196.4" fill="#d4d4d8">US$ 0,30</tspan><tspan x="288.8" fill="#d4d4d8">US$ 1,20</tspan><tspan x="381.2" fill="#d4d4d8">US$ 0,00037</tspan><tspan x="515.6" fill="#4ade80">R$ 0,002</tspan><tspan x="624.8" fill="#d4d4d8">1.05M</tspan></text>
+    <text y="172"><tspan x="20.0" fill="#d4d4d8">Gemini 3.8 Flash</tspan><tspan x="196.4" fill="#d4d4d8">US$ 0,75</tspan><tspan x="288.8" fill="#d4d4d8">US$ 3,75</tspan><tspan x="381.2" fill="#d4d4d8">US$ 0,00115</tspan><tspan x="498.8" fill="#4ade80">R$ 0,00622</tspan><tspan x="624.8" fill="#d4d4d8">1.05M</tspan></text>
+    <text y="191"><tspan x="20.0" fill="#d4d4d8">Claude Sonnet 5.5</tspan><tspan x="196.4" fill="#d4d4d8">US$ 2,00</tspan><tspan x="280.4" fill="#d4d4d8">US$ 10,00</tspan><tspan x="381.2" fill="#d4d4d8">US$ 0,00307</tspan><tspan x="507.2" fill="#4ade80">R$ 0,0166</tspan><tspan x="650.0" fill="#d4d4d8">1M</tspan></text>
+    <text y="210"><tspan x="20.0" fill="#d4d4d8">GPT-6.1 Sol</tspan><tspan x="196.4" fill="#d4d4d8">US$ 2,00</tspan><tspan x="280.4" fill="#d4d4d8">US$ 10,00</tspan><tspan x="381.2" fill="#d4d4d8">US$ 0,00307</tspan><tspan x="507.2" fill="#4ade80">R$ 0,0166</tspan><tspan x="624.8" fill="#d4d4d8">1.05M</tspan></text>
+    <text y="229"><tspan x="20.0" fill="#d4d4d8">Gemini 4 Argon</tspan><tspan x="196.4" fill="#d4d4d8">US$ 2,00</tspan><tspan x="280.4" fill="#d4d4d8">US$ 10,00</tspan><tspan x="381.2" fill="#d4d4d8">US$ 0,00307</tspan><tspan x="507.2" fill="#4ade80">R$ 0,0166</tspan><tspan x="624.8" fill="#d4d4d8">1.05M</tspan></text>
+    <text y="248"><tspan x="20.0" fill="#d4d4d8">Claude Opus 5.5</tspan><tspan x="196.4" fill="#d4d4d8">US$ 4,00</tspan><tspan x="280.4" fill="#d4d4d8">US$ 20,00</tspan><tspan x="381.2" fill="#d4d4d8">US$ 0,00614</tspan><tspan x="507.2" fill="#4ade80">R$ 0,0332</tspan><tspan x="650.0" fill="#d4d4d8">1M</tspan></text>
+    <text y="267"></text>
+    <text y="286"><tspan x="20.0" fill="#d4d4d8" opacity="0.6">Câmbio: US$ 1 = R$ 5,40 · informada pelo usuário</tspan></text>
+    <text y="305"><tspan x="20.0" fill="#d4d4d8" opacity="0.6">Use --all para ver todos os modelos, inclusive os antigos.</tspan></text>
+  </g>
+</svg>

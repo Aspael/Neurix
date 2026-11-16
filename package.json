@@ -1,0 +1,65 @@
+{
+  "name": "aspael-neurix",
+  "version": "0.1.0",
+  "description": "LLM token calculator: tokens, cost in USD/BRL, context window, file formats, RAG cost and local VRAM/KV cache — interactive CLI in English and Portuguese",
+  "keywords": [
+    "llm",
+    "tokens",
+    "token-counter",
+    "tokenizer",
+    "cost",
+    "pricing",
+    "context-window",
+    "rag",
+    "vram",
+    "kv-cache",
+    "ollama",
+    "llama.cpp",
+    "claude",
+    "openai",
+    "gemini",
+    "cli"
+  ],
+  "author": "Aspael",
+  "license": "MIT",
+  "homepage": "https://github.com/Aspael/Neurix#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Aspael/Neurix.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Aspael/Neurix/issues"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "bin": {
+    "neurix": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "node src/cli.ts",
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "screenshots": "node scripts/screenshots.ts && node scripts/banner.ts",
+    "prices:build": "node scripts/build-prices.ts",
+    "prices:check": "node scripts/build-prices.ts --strict",
+    "prepublishOnly": "npm run typecheck && npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "24",
+    "tsup": "^9.0.0",
+    "typescript": "5.9"
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.9.0",
+    "commander": "^15.1.0",
+    "picocolors": "^1.1.1"
+  }
+}
