@@ -330,11 +330,11 @@ O Neurix responde tudo isso no terminal, e explica cada número.
 ## 📦 Instalação
 
 ```bash
-npm install -g neurix     # depois é só rodar: neurix
+npm install -g aspael-neurix     # depois é só rodar: neurix
 ```
 
 ```bash
-npx neurix                # ou experimente sem instalar
+npx aspael-neurix                # ou experimente sem instalar
 ```
 
 > Requer **Node.js 22.12+** · também funciona com `pnpm add -g neurix` e `yarn global add neurix`
