@@ -35,11 +35,11 @@ Neurix answers all of it in the terminal, and explains every number.
 ## 📦 Install
 
 ```bash
-npm install -g neurix     # then just run: neurix
+npm install -g aspael-neurix     # then just run: neurix
 ```
 
 ```bash
-npx neurix                # or try it without installing
+npx aspael-neurix                # or try it without installing
 ```
 
 > Requires **Node.js 22.12+** · also works with `pnpm add -g neurix` and `yarn global add neurix`
