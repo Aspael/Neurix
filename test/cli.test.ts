@@ -31,6 +31,15 @@ before(async () => {
 after(() => rm(home, { recursive: true, force: true }));
 
 describe("cli", () => {
+  test("npx acha o executável (bin com o nome do pacote)", () => {
+    // Com mais de um executável, o npx só funciona se um deles tiver o nome do pacote;
+    // sem isso: "could not determine executable to run" (bug da 0.2.0).
+    const bin = pkg.bin as Record<string, string>;
+    assert.equal(bin[pkg.name], "dist/cli.js");
+    assert.equal(bin.neurix, "dist/cli.js");
+    assert.equal(bin["neurix-mcp"], "dist/mcp.js");
+  });
+
   test("--version bate com o package.json", () => {
     const r = run(["--version"]);
     assert.equal(r.code, 0);

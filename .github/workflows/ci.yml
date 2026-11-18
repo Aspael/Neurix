@@ -78,6 +78,10 @@ jobs:
           echo "Conteúdo do pacote:"
           tar -tzf aspael-neurix-*.tgz
 
+      - name: npx can find the executable
+        # Mesma função que o npx usa: com vários executáveis, um precisa ter o nome do pacote.
+        run: node scripts/check-npx.mjs
+
       - name: Install the tarball and run the binaries
         run: |
           npm install -g ./aspael-neurix-*.tgz

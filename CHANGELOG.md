@@ -2,7 +2,15 @@
 
 All notable changes to Neurix. 🇧🇷 Em português: [README → Novidades](README.md#-novidades-changelog).
 
-## 0.2.0 — unreleased
+## 0.2.1 — unreleased
+
+**🐛 Fixes**
+
+- **`npx aspael-neurix` didn't run** ("could not determine executable to run"): the package had two executables (`neurix` and `neurix-mcp`) and none named after the package, so npx couldn't tell which to open. The package now also ships an `aspael-neurix` executable.
+- The README said to install `neurix` (`npm install -g neurix`, `npx neurix`), which isn't the package name. It's now `aspael-neurix`, and the badges point to the right package.
+- CI now tests `npx` against the packed package, so this can't come back.
+
+## 0.2.0 — 2026-11-17
 
 **✨ New**
 

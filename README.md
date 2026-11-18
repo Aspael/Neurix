@@ -6,13 +6,13 @@
 
 <br>
 
-<a href="https://www.npmjs.com/package/neurix"><img src="https://img.shields.io/npm/v/neurix?style=for-the-badge&color=8b5cf6&labelColor=1e1b2e&logo=npm&logoColor=white" alt="npm version"></a>
-<a href="https://www.npmjs.com/package/neurix"><img src="https://img.shields.io/npm/dm/neurix?style=for-the-badge&color=22d3ee&labelColor=1e1b2e&label=downloads" alt="npm downloads"></a>
-<img src="https://img.shields.io/node/v/neurix?style=for-the-badge&color=4ade80&labelColor=1e1b2e&logo=nodedotjs&logoColor=white" alt="node version">
+<a href="https://www.npmjs.com/package/aspael-neurix"><img src="https://img.shields.io/npm/v/aspael-neurix?style=for-the-badge&color=8b5cf6&labelColor=1e1b2e&logo=npm&logoColor=white" alt="npm version"></a>
+<a href="https://www.npmjs.com/package/aspael-neurix"><img src="https://img.shields.io/npm/dm/aspael-neurix?style=for-the-badge&color=22d3ee&labelColor=1e1b2e&label=downloads" alt="npm downloads"></a>
+<img src="https://img.shields.io/node/v/aspael-neurix?style=for-the-badge&color=4ade80&labelColor=1e1b2e&logo=nodedotjs&logoColor=white" alt="node version">
 <a href="https://github.com/Aspael/Neurix/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Aspael/Neurix/ci.yml?branch=main&style=for-the-badge&labelColor=1e1b2e&logo=githubactions&logoColor=white&label=CI" alt="CI"></a>
 <img src="https://img.shields.io/badge/TypeScript-strict-3178c6?style=for-the-badge&labelColor=1e1b2e&logo=typescript&logoColor=white" alt="TypeScript">
 <img src="https://img.shields.io/badge/i18n-EN%20%C2%B7%20PT-f472b6?style=for-the-badge&labelColor=1e1b2e" alt="English and Portuguese">
-<a href="LICENSE"><img src="https://img.shields.io/npm/l/neurix?style=for-the-badge&color=facc15&labelColor=1e1b2e" alt="license"></a>
+<a href="LICENSE"><img src="https://img.shields.io/npm/l/aspael-neurix?style=for-the-badge&color=facc15&labelColor=1e1b2e" alt="license"></a>
 
 <br><br>
 
@@ -36,14 +36,14 @@ Neurix answers all of it in the terminal, and explains every number.
 ## 📦 Install
 
 ```bash
-npm install -g aspael-neurix     # then just run: neurix
+npm install -g aspael-neurix   # then just run: neurix
 ```
 
 ```bash
-npx aspael-neurix                # or try it without installing
+npx aspael-neurix             # or try it without installing
 ```
 
-> Requires **Node.js 22.12+** · also works with `pnpm add -g neurix` and `yarn global add neurix`
+> Requires **Node.js 22.12+** · also works with `pnpm add -g aspael-neurix` and `yarn global add aspael-neurix`
 
 <img src="assets/divider.svg" width="100%" alt="">
 
@@ -450,7 +450,19 @@ pnpm build && pnpm link --global
 ## 📝 Changelog
 
 <details open>
-<summary><b>0.2.0 — unreleased</b></summary>
+<summary><b>0.2.1 — unreleased</b></summary>
+<br>
+
+**🐛 Fixes**
+
+- **`npx aspael-neurix` didn't run** ("could not determine executable to run"): the package had two executables (`neurix` and `neurix-mcp`) and none named after the package, so npx couldn't tell which to open. The package now also ships an `aspael-neurix` executable.
+- The README said to install `neurix` (`npm install -g neurix`, `npx neurix`), which isn't the package name. It's now `aspael-neurix`, and the badges point to the right package.
+- CI now tests `npx` against the packed package, so this can't come back.
+
+</details>
+
+<details>
+<summary><b>0.2.0 — 2026-11-17</b></summary>
 <br>
 
 **✨ New**
@@ -529,14 +541,14 @@ O Neurix responde tudo isso no terminal, e explica cada número.
 ## 📦 Instalação
 
 ```bash
-npm install -g aspael-neurix     # depois é só rodar: neurix
+npm install -g aspael-neurix   # depois é só rodar: neurix
 ```
 
 ```bash
-npx aspael-neurix                # ou experimente sem instalar
+npx aspael-neurix             # ou experimente sem instalar
 ```
 
-> Requer **Node.js 22.12+** · também funciona com `pnpm add -g neurix` e `yarn global add neurix`
+> Requer **Node.js 22.12+** · também funciona com `pnpm add -g aspael-neurix` e `yarn global add aspael-neurix`
 
 <img src="assets/divider.svg" width="100%" alt="">
 
@@ -943,7 +955,19 @@ pnpm build && pnpm link --global
 ## 📝 Novidades (changelog)
 
 <details open>
-<summary><b>0.2.0 — ainda não publicada</b></summary>
+<summary><b>0.2.1 — ainda não publicada</b></summary>
+<br>
+
+**🐛 Correções**
+
+- **`npx aspael-neurix` não rodava** ("could not determine executable to run"): o pacote tinha dois executáveis (`neurix` e `neurix-mcp`) e nenhum com o nome do pacote, então o npx não sabia qual abrir. Agora o pacote tem também o executável `aspael-neurix`.
+- O README mandava instalar `neurix` (`npm install -g neurix`, `npx neurix`), que não é o nome do pacote. Agora é `aspael-neurix`, e os selos do topo apontam para o pacote certo.
+- O CI agora testa o `npx` com o pacote empacotado, para esse erro não voltar.
+
+</details>
+
+<details>
+<summary><b>0.2.0 — 17/11/2026</b></summary>
 <br>
 
 **✨ Novidades**

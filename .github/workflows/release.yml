@@ -60,6 +60,18 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Smoke test from npm (npx)
+        # Testa o pacote publicado do jeito que o usuário usa. O registro leva alguns segundos para propagar.
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          for i in 1 2 3 4 5 6; do
+            if OUT="$(npx --yes "aspael-neurix@$V" --version 2>&1)" && [ "$OUT" = "$V" ]; then
+              echo "npx aspael-neurix@$V --version -> $OUT"; exit 0
+            fi
+            echo "tentativa $i: $OUT"; sleep 15
+          done
+          echo "::error::npx aspael-neurix@$V não funcionou depois de publicar"; exit 1
+
       - name: GitHub release
         run: |
           npm pack
