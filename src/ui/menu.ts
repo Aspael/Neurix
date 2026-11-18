@@ -17,13 +17,22 @@ import {
   type Quantization,
 } from "../core/local.ts";
 import { simulateRag, type RagInput } from "../core/rag.ts";
-import { estimateTokens } from "../core/tokens.ts";
+import { isCached, localCounter } from "../core/hf.ts";
+import { counterFor, estimateTokens, type Counter } from "../core/tokens.ts";
 import { toBrl, type ExchangeRate } from "../currency/exchange.ts";
 import { formatBrl, formatContext, formatInt, formatNum, formatUsd } from "../currency/format.ts";
-import { dictFor, getLang, LANGS, saveLang, t, type Lang } from "../i18n/index.ts";
+import { dictFor, getLang, LANGS, locale, saveLang, t, type Lang } from "../i18n/index.ts";
 import { visibleModels } from "../prices/load.ts";
 import type { ModelPrice, PriceDataset } from "../types/models.ts";
 import { canAnimate, miniHeader, splash, thinking } from "./anim.ts";
+import { toolsFlow } from "./tools.ts";
+import { manualFlow } from "./manual.ts";
+import { askHfModel, hardwareWithSpinner, localMenu, VERDICT_COLOR } from "./localtools.ts";
+import { findInstalledModels } from "../core/installed.ts";
+import { inferencePowerW, type Gpu, type Hardware } from "../core/hardware.ts";
+import { estimateSpeed, type SpeedEstimate } from "../core/localcost.ts";
+import { localReport } from "../report/builders.ts";
+import { clearLastReport, defaultReportName, FORMATS, getLastReport, setLastReport, writeReport, type Report, type ReportFormat } from "../report/report.ts";
 import { printDetail, printFormats, printLocal, printRag, printTable, safeRate, wrap, type OutputOptions } from "./output.ts";
 
 export interface MenuOptions extends OutputOptions {
@@ -31,9 +40,9 @@ export interface MenuOptions extends OutputOptions {
 }
 
 /** Ctrl+C dentro de uma opção volta ao menu em vez de fechar o programa. */
-class Back extends Error {}
+export class Back extends Error {}
 
-function ok<T>(value: T): Exclude<T, symbol> {
+export function ok<T>(value: T): Exclude<T, symbol> {
   if (p.isCancel(value)) throw new Back();
   return value as Exclude<T, symbol>;
 }
@@ -52,10 +61,10 @@ function noteParas(paras: string[], title: string, width = 66): void {
 }
 
 /** Explicação curta acima de uma pergunta. */
-const tip = (text: string): void => p.log.message(pc.dim(wrap(text, 70).join("\n")));
+export const tip = (text: string): void => p.log.message(pc.dim(wrap(text, 70).join("\n")));
 
 /** Animação de "processando" antes de cada resultado. */
-const think = (): Promise<void> => thinking(p.spinner, t().menu.thinking, t().menu.ready);
+export const think = (): Promise<void> => thinking(p.spinner, t().menu.thinking, t().menu.ready);
 
 // ───────────── Menu principal ─────────────
 
@@ -83,9 +92,11 @@ export async function mainMenu(dataset: PriceDataset, opts: MenuOptions): Promis
         { value: "texto", label: M.text, hint: M.textHint },
         { value: "arquivo", label: M.file, hint: M.fileHint },
         { value: "local", label: M.local, hint: M.localHint },
+        { value: "ferramentas", label: M.tools, hint: M.toolsHint },
         { value: "glossario", label: M.glossary, hint: M.glossaryHint },
         { value: "idioma", label: M.language, hint: M.languageHint(t().langName) },
         { value: "sair", label: M.exit },
+        { value: "creditos", label: M.credits, hint: M.creditsHint },
       ],
     });
     if (p.isCancel(choice) || choice === "sair") {
@@ -93,11 +104,21 @@ export async function mainMenu(dataset: PriceDataset, opts: MenuOptions): Promis
       return;
     }
 
+    if (choice === "creditos") {
+      credits();
+      continue; // créditos volta direto ao menu
+    }
+
     try {
       if (choice === "texto") await textFlow(dataset, opts, await getRate());
       else if (choice === "arquivo") await fileFlow(dataset, opts, await getRate());
-      else if (choice === "local") await localFlow(opts);
-      else if (choice === "glossario") glossary();
+      else if (choice === "local") {
+        if (!(await localMenu(dataset, opts, getRate))) continue; // "Voltar" no submenu
+      }
+      else if (choice === "ferramentas") {
+        if (!(await toolsFlow(dataset, opts, getRate))) continue; // "Voltar" no submenu
+      }
+      else if (choice === "glossario") await manualFlow();
       else {
         await languageFlow();
         continue; // trocar idioma já volta direto ao menu
@@ -108,12 +129,58 @@ export async function mainMenu(dataset: PriceDataset, opts: MenuOptions): Promis
       continue;
     }
 
-    const again = await p.confirm({ message: t().menu.again, initialValue: true });
-    if (p.isCancel(again) || !again) {
-      p.outro(pc.magenta(t().menu.bye));
-      return;
+    // Depois do resultado: voltar, exportar o relatório (quantas vezes quiser) ou sair.
+    for (;;) {
+      const R = t().rep;
+      const report = getLastReport();
+      const next = await p.select<"menu" | "export" | "exit">({
+        message: t().menu.again,
+        options: [
+          { value: "menu", label: R.backToMenu },
+          ...(report ? [{ value: "export" as const, label: R.exportOption, hint: R.exportHint }] : []),
+          { value: "exit", label: t().menu.exit },
+        ],
+      });
+      if (p.isCancel(next) || next === "exit") {
+        p.outro(pc.magenta(t().menu.bye));
+        return;
+      }
+      if (next === "menu") break;
+      if (report) await exportFlow(report);
     }
+    clearLastReport();
   }
+}
+
+/** Pergunta o formato e o arquivo, e salva o relatório. */
+async function exportFlow(report: Report): Promise<void> {
+  const R = t().rep;
+  const format = await p.select<ReportFormat>({
+    message: R.formatAsk,
+    options: FORMATS.map((f) => ({ value: f, label: R.formats[f][0] ?? f, hint: R.formats[f][1] })),
+  });
+  if (p.isCancel(format)) return;
+  const path = await p.text({ message: R.pathAsk, initialValue: defaultReportName(report, format), placeholder: defaultReportName(report, format) });
+  if (p.isCancel(path)) return;
+  try {
+    const full = await writeReport(report, path || defaultReportName(report, format), format, locale());
+    p.log.success(R.saved(full));
+  } catch (err) {
+    p.log.error(R.saveError((err as Error).message));
+  }
+}
+
+// ───────────── Créditos ─────────────
+
+function credits(): void {
+  const lines = [
+    pc.bold(pc.magenta("GEORGE LUCAS SILVA LEITÃO")),
+    pc.dim("Brazil — Manaus, State of Amazonas"),
+    "",
+    `${pc.bold("GitHub")}    ${pc.cyan("https://github.com/Aspael")}`,
+    `${pc.bold("LinkedIn")}  ${pc.cyan("https://www.linkedin.com/in/george-lucas-leitao/")}`,
+  ];
+  p.note(lines.join("\n"), t().menu.creditsTitle);
 }
 
 // ───────────── Idioma ─────────────
@@ -142,7 +209,7 @@ function modelHint(m: ModelPrice, rate: ExchangeRate | null, iof: number): strin
   return t().ask.modelHint(`${usd}${real}`, formatContext(m.contextWindow));
 }
 
-async function askModel(
+export async function askModel(
   models: ModelPrice[],
   rate: ExchangeRate | null,
   opts: MenuOptions,
@@ -162,7 +229,7 @@ async function askModel(
   return choice === "__all__" ? "__all__" : (models.find((m) => m.id === choice) as ModelPrice);
 }
 
-async function askOutput(opts: MenuOptions): Promise<number> {
+export async function askOutput(opts: MenuOptions): Promise<number> {
   const A = t().ask;
   tip(t().why.outputCost);
   const values = [100, 300, 1000, 4000];
@@ -178,7 +245,7 @@ async function askOutput(opts: MenuOptions): Promise<number> {
   );
 }
 
-async function askNumber(
+export async function askNumber(
   message: string,
   def: number,
   opts: { min?: number; hint?: string; integer?: boolean } = {},
@@ -229,12 +296,13 @@ async function showTextResult(text: string, dataset: PriceDataset, opts: MenuOpt
   const model = await askModel(models, rate, opts, true);
   await think();
   if (model === "__all__") return printTable(text, models, opts.out, rate, opts);
-  printDetail(text, model, computeCost(model, estimateTokens(text), opts.out), rate, opts);
+  const counter = await counterFor(model);
+  printDetail(text, model, computeCost(model, counter.count(text), opts.out), rate, opts, counter);
 }
 
 // ───────────── 2. Arquivo ─────────────
 
-async function readTextFile(): Promise<{ name: string; content: string }> {
+export async function readTextFile(): Promise<{ name: string; path: string; content: string }> {
   const F = t().fileFlow;
   const path = ok(await p.path({ message: F.path, validate: (v) => (!v ? F.pathEmpty : undefined) }));
   const full = resolve(path);
@@ -258,7 +326,7 @@ async function readTextFile(): Promise<{ name: string; content: string }> {
   const content = buf.toString("utf8");
   spin?.stop(pc.green(F.info(basename(full), formatInt(content.length), formatInt(estimateTokens(content)))));
   if (!spin) p.log.info(F.info(basename(full), formatInt(content.length), formatInt(estimateTokens(content))));
-  return { name: basename(full), content };
+  return { name: basename(full), path: full, content };
 }
 
 async function fileFlow(dataset: PriceDataset, opts: MenuOptions, rate: ExchangeRate | null): Promise<void> {
@@ -286,10 +354,11 @@ async function fileFlow(dataset: PriceDataset, opts: MenuOptions, rate: Exchange
   if (mode === "formato") {
     tip(t().why.formats);
     const model = (await askModel(models, rate, opts, false)) as ModelPrice;
-    const variants = formatVariants(file.content, detectKind(file.content, file.name));
+    const counter = await counterFor(model);
+    const variants = formatVariants(file.content, detectKind(file.content, file.name), counter.count);
     if (variants.length < 2) p.log.warn(F.noVariants);
     await think();
-    return printFormats(file.name, variants, model, opts.out, rate, opts);
+    return printFormats(file.name, variants, model, opts.out, rate, opts, counter);
   }
 
   // RAG
@@ -329,8 +398,9 @@ async function fileFlow(dataset: PriceDataset, opts: MenuOptions, rate: Exchange
   const queriesPerMonth = await askNumber(R.queries, 1000, { min: 1 });
   const embedPricePer1M = await askNumber(R.embedPrice, 0.02, { hint: W.embedPrice });
 
+  const counter = await counterFor(model);
   const input: RagInput = {
-    docTokens: estimateTokens(file.content),
+    docTokens: counter.count(file.content),
     chunkSize,
     overlap: Math.round((chunkSize * overlapPct) / 100),
     topK,
@@ -341,7 +411,7 @@ async function fileFlow(dataset: PriceDataset, opts: MenuOptions, rate: Exchange
     embedPricePer1M,
   };
   await think();
-  printRag(file.name, model, input, simulateRag(model, input), rate, opts);
+  printRag(file.name, model, input, simulateRag(model, input), rate, opts, counter);
 }
 
 // ───────────── 3. Modelo local ─────────────
@@ -378,66 +448,104 @@ async function askCustomModel(): Promise<LocalModel> {
   return { id: "custom", name: L.customName(formatNum(paramsB)), paramsB, layers, kvHeads, headDim, maxContext };
 }
 
-export async function localFlow(opts: MenuOptions): Promise<void> {
+export interface LocalPreset {
+  model?: LocalModel;
+  /** Quantização real (modelo instalado): pula a pergunta. */
+  quant?: Quantization;
+  hw?: Hardware;
+}
+
+export async function localFlow(opts: MenuOptions, preset: LocalPreset = {}): Promise<void> {
   const D = t();
   const L = D.localFlow;
+  const LT = D.lt;
   const W = D.why;
-  p.note(wrap(L.intro, 64).join("\n"), L.title);
+  if (!preset.model) p.note(wrap(L.intro, 64).join("\n"), L.title);
+  const hw = preset.hw ?? (await hardwareWithSpinner());
 
-  tip(W.params);
-  const modelId = ok(
-    await p.select({
-      message: L.model,
-      initialValue: "llama-3.1-8b",
-      maxItems: 12,
-      options: [
-        ...LOCAL_MODELS.map((m) => ({
-          value: m.id,
-          label: m.name,
-          hint: L.modelHint(formatNum(m.paramsB), formatLocalContext(m.maxContext)),
+  let model = preset.model;
+  if (!model) {
+    const scan = await findInstalledModels().catch(() => null);
+    tip(W.params);
+    const modelId = ok(
+      await p.select<string>({
+        message: L.model,
+        initialValue: scan?.models[0] ? `inst:${scan.models[0].path}` : "llama-3.1-8b",
+        maxItems: 14,
+        options: [
+          ...(scan?.models ?? []).map((m) => ({ value: `inst:${m.path}`, label: `📦 ${m.name}`, hint: LT.installedHint(m.source, m.quant.id, formatNum(m.sizeBytes / GIB, 1)) })),
+          ...LOCAL_MODELS.map((m) => ({
+            value: m.id,
+            label: m.name,
+            hint: L.modelHint(formatNum(m.paramsB), formatLocalContext(m.maxContext)),
+          })),
+          { value: "hf", label: `🤗 ${LT.hfOption}`, hint: LT.hfOptionHint },
+          { value: "custom", label: `✏️  ${L.custom}`, hint: L.customHint },
+        ],
+      }),
+    );
+    if (modelId.startsWith("inst:")) {
+      const inst = scan?.models.find((m) => `inst:${m.path}` === modelId);
+      if (inst) {
+        model = inst.model;
+        preset.quant = inst.quant;
+      }
+    } else if (modelId === "hf") {
+      model = (await askHfModel()) ?? undefined;
+      if (!model) {
+        // sem internet, repositório sem config.json etc.: volta para as perguntas manuais
+        p.log.warn(LT.hfFallback);
+        model = await askCustomModel();
+      }
+    } else if (modelId === "custom") model = await askCustomModel();
+    else model = LOCAL_MODELS.find((m) => m.id === modelId) as LocalModel;
+  }
+  if (!model) throw new Back();
+
+  let quant = preset.quant;
+  if (quant) p.log.info(LT.realQuant(quant.id, formatNum(quant.bits, 2)));
+  else {
+    tip(W.quant);
+    const m = model;
+    const quantId = ok(
+      await p.select({
+        message: L.quant,
+        initialValue: "Q4_K_M",
+        options: QUANTIZATIONS.map((q) => ({
+          value: q.id,
+          label: q.id,
+          hint: L.quantHint(formatNum(q.bits, 1), gb((m.paramsB * 1e9 * q.bits) / 8 / GIB), D.quantHints[q.id] ?? ""),
         })),
-        { value: "custom", label: `✏️  ${L.custom}`, hint: L.customHint },
-      ],
-    }),
-  );
-  const model = modelId === "custom" ? await askCustomModel() : (LOCAL_MODELS.find((m) => m.id === modelId) as LocalModel);
-
-  tip(W.quant);
-  const quantId = ok(
-    await p.select({
-      message: L.quant,
-      initialValue: "Q4_K_M",
-      options: QUANTIZATIONS.map((q) => ({
-        value: q.id,
-        label: q.id,
-        hint: L.quantHint(formatNum(q.bits, 1), gb((model.paramsB * 1e9 * q.bits) / 8 / GIB), D.quantHints[q.id] ?? ""),
-      })),
-    }),
-  );
-  const quant = QUANTIZATIONS.find((q) => q.id === quantId) as Quantization;
+      }),
+    );
+    quant = QUANTIZATIONS.find((q) => q.id === quantId) as Quantization;
+  }
 
   tip(`${W.localContext} ${W.kv}`);
-  const ctxChoices = [2048, 4096, 8192, 16_384, 32_768, 65_536, 131_072].filter((c) => c <= model.maxContext);
+  const maxCtx = model.maxContext;
+  const ctxChoices = [2048, 4096, 8192, 16_384, 32_768, 65_536, 131_072].filter((c) => c <= maxCtx);
   const ctxChoice = ok(
     await p.select<number | "texto">({
       message: L.ctx,
-      initialValue: Math.min(8192, model.maxContext),
+      initialValue: Math.min(8192, maxCtx),
       options: [
         ...ctxChoices.map((c) => ({
           value: c,
           label: `${formatLocalContext(c)} tokens`,
-          hint: L.ctxHint(formatInt(c / 500), c === model.maxContext),
+          hint: L.ctxHint(formatInt(c / 500), c === maxCtx),
         })),
         { value: "texto" as const, label: `📝 ${L.ctxText}`, hint: L.ctxTextHint },
       ],
     }),
   );
   let context: number;
-  let textTokens: number | null = null;
+  let text: { tokens: number; counter: Counter } | null = null;
   if (ctxChoice === "texto") {
-    textTokens = estimateTokens(await askText());
-    context = textTokens + opts.out;
-    p.log.info(L.ctxInfo(formatInt(textTokens), formatInt(opts.out), formatInt(context)));
+    const typed = await askText();
+    const counter = await loadLocalCounter(model);
+    text = { tokens: counter.count(typed), counter };
+    context = text.tokens + opts.out;
+    p.log.info(L.ctxInfo(formatInt(text.tokens), formatInt(opts.out), formatInt(context)));
   } else context = ctxChoice;
 
   tip(W.kvPrecision);
@@ -450,6 +558,7 @@ export async function localFlow(opts: MenuOptions): Promise<void> {
   );
   const kv = KV_PRECISIONS.find((k) => k.id === kvId) as KvPrecision;
 
+  // VRAM: a detectada já vem marcada; as outras opções ficam para simular outra placa.
   tip(W.vram);
   const gpus: [number, string][] = [
     [4, "GTX 1650"],
@@ -462,33 +571,55 @@ export async function localFlow(opts: MenuOptions): Promise<void> {
     [48, "RTX A6000, 2× 24 GB"],
     [80, "A100 / H100"],
   ];
-  const vram = ok(
+  const detected = hw.best && !(hw.best.integrated && hw.best.vendor !== "apple") ? hw.best : null;
+  const DETECTED = -1;
+  const vramChoice = ok(
     await p.select<number>({
       message: L.vram,
-      initialValue: 8,
+      initialValue: detected ? DETECTED : 0,
       options: [
-        { value: 0, label: L.vramSkip, hint: L.vramSkipHint },
+        ...(detected ? [{ value: DETECTED, label: `🔍 ${LT.detectedVram(gb(detected.vramGib), detected.name)}`, hint: LT.detectedHint }] : []),
+        { value: 0, label: detected ? L.vramSkip : `${L.vramSkip} ${pc.dim(LT.noGpuDetected)}`, hint: L.vramSkipHint },
         ...gpus.map(([v, ex]) => ({ value: v, label: `${v} GB`, hint: `${L.eg} ${ex}` })),
       ],
     }),
   );
+  const vram = vramChoice === DETECTED && detected ? detected.vramGib : vramChoice;
+  const gpu: Gpu | null =
+    vramChoice === DETECTED && detected ? detected : vram > 0 ? { name: "GPU", vendor: "other", vramGib: vram, integrated: false, source: "manual" } : null;
 
   const input = { model, quant, kv, context, ...(vram > 0 && { vramGib: vram }) };
   await think();
-  printLocal(input, estimateLocal(input), textTokens, opts);
+  const est = estimateLocal(input);
+  printLocal(input, est, text, opts);
+  const speed = estimateSpeed(model, quant, kv, context, { ramGib: hw.ramGib, ramBandwidthGBs: hw.ramBandwidthGBs, gpu });
+  printSpeed(speed, gpu);
+  setLastReport(localReport(input, est, text, speed, hw, gpu));
 }
 
-// ───────────── Glossário ─────────────
-
-function glossary(): void {
-  const D = t();
-  console.log();
-  console.log(pc.bold(D.glossaryTitle));
-  const width = Math.min(90, (process.stdout.columns || 80) - 6);
-  for (const [term, text] of D.glossary) {
-    console.log();
-    console.log(`  ${pc.bold(pc.cyan(term))}`);
-    for (const l of wrap(text, width)) console.log(`    ${l}`);
-  }
+/** Velocidade estimada e veredito depois do cálculo de memória. */
+export function printSpeed(speed: SpeedEstimate, gpu: Gpu | null): void {
+  const LT = t().lt;
+  console.log(
+    `${pc.bold(LT.speedTitle)} ${speed.decodeTps > 0 ? pc.bold(`~${formatNum(speed.decodeTps, 1)} tok/s`) : "—"}  ${pc.dim(`· ${LT.placement[speed.placement]}`)}  ${VERDICT_COLOR[speed.verdict](LT.verdict[speed.verdict])}`,
+  );
+  const w = inferencePowerW(gpu);
+  if (w && speed.decodeTps > 0) console.log(pc.dim(LT.speedEnergy(formatInt(w), formatNum(((1e6 / speed.decodeTps / 3600) * w) / 1000, 2))));
+  console.log(pc.dim(LT.speedNote(speed.gpuBandwidthGBs ? formatInt(speed.gpuBandwidthGBs) : "—", formatInt(speed.ramBandwidthGBs))));
   console.log();
 }
+
+/** Tokenizer do Hugging Face do modelo local, com spinner quando precisa baixar. */
+async function loadLocalCounter(model: LocalModel): Promise<Counter> {
+  const C = t().count;
+  const repo = model.hfRepo;
+  if (!repo || (await isCached(repo))) return localCounter(model);
+  const s = canAnimate() ? p.spinner() : null;
+  if (s) s.start(C.downloading(repo));
+  else p.log.info(C.downloading(repo));
+  const counter = await localCounter(model);
+  if (counter.exact) s?.stop(pc.green(C.ready(repo)));
+  else s?.stop(pc.yellow(C.fallback(counter.fallback ?? "?")));
+  return counter;
+}
+

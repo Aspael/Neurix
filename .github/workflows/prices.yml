@@ -1,0 +1,106 @@
+# Atualização automática de preços.
+#
+# Todo dia (e sob demanda) baixa os preços do LiteLLM e da OpenRouter com scripts/build-prices.ts e
+# regenera data/models.json. Se algum preço mudou de verdade (não só a data):
+#   1. checa tipos, compila e roda os testes com a tabela nova;
+#   2. publica a mudança — por padrão com commit direto na main; com a variável do repositório
+#      PRICES_MODE=pr, abre um pull request no lugar.
+#
+# Quem usa o Neurix recebe a tabela nova sozinho: a CLI baixa data/models.json da main (no máximo 1×
+# por dia, com cache em ~/.neurix) — não precisa publicar versão nova no npm só por causa de preço.
+#
+# Configuração (Settings → Secrets and variables → Actions → Variables):
+#   PRICES_MODE = commit (padrão) | pr
+# Para o modo "pr": Settings → Actions → General → "Allow GitHub Actions to create and approve pull requests".
+# Se a main tiver proteção que exige PR, use PRICES_MODE=pr.
+name: Update prices
+
+on:
+  schedule:
+    - cron: "17 9 * * *" # todo dia, 09:17 UTC (06:17 em Brasília)
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "commit (direto na main) ou pr"
+        type: choice
+        options: [default, commit, pr]
+        default: default
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: prices
+  cancel-in-progress: true
+
+jobs:
+  prices:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      MODE: ${{ (github.event.inputs.mode != '' && github.event.inputs.mode != 'default') && github.event.inputs.mode || vars.PRICES_MODE || 'commit' }}
+      NEURIX_OFFLINE: "1" # os testes usam a tabela do repositório, não a publicada
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Fetch prices and regenerate data/models.json
+        run: pnpm prices:build | tee prices.log
+
+      - name: Did any price change?
+        id: diff
+        # Ignora só as datas de geração/coleta: sem mudança real, nada a publicar.
+        run: |
+          if git diff --quiet -I 'generatedAt' -I 'fetchedAt' -- data/models.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Nenhum preço mudou." | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            {
+              echo "### Preços atualizados"
+              echo '```'
+              git diff --stat -- data/models.json
+              echo '```'
+              echo '<details><summary>Log do build-prices</summary>'
+              echo
+              echo '```'
+              cat prices.log
+              echo '```'
+              echo '</details>'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Check the new data
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          pnpm typecheck
+          pnpm build
+          pnpm test
+
+      - name: Commit to main
+        if: steps.diff.outputs.changed == 'true' && env.MODE == 'commit'
+        run: |
+          git config user.name "neurix-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/models.json
+          git commit -m "chore(prices): atualiza a tabela de preços ($(date -u +%Y-%m-%d))"
+          git push
+
+      - name: Open pull request
+        if: steps.diff.outputs.changed == 'true' && env.MODE == 'pr'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: chore/update-prices
+          delete-branch: true
+          add-paths: data/models.json
+          commit-message: "chore(prices): atualiza a tabela de preços"
+          title: "chore(prices): atualiza a tabela de preços"
+          body-path: prices.log
+          labels: prices

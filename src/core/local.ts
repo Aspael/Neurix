@@ -20,6 +20,8 @@ export interface LocalModel {
   headDim: number;
   /** Contexto máximo de fábrica, em tokens. */
   maxContext: number;
+  /** Repositório no Hugging Face de onde vem o tokenizer (contagem exata). Sem ele, estimativa. */
+  hfRepo?: string;
 }
 
 export interface Quantization {
@@ -58,18 +60,19 @@ export const KV_PRECISIONS: KvPrecision[] = [
   { id: "Q4_0", bytes: 0.5625 },
 ];
 
+// Tokenizers: repositórios abertos (os da unsloth são cópias sem cadastro dos oficiais da Meta, Mistral e Google).
 export const LOCAL_MODELS: LocalModel[] = [
-  { id: "llama-3.2-1b", name: "Llama 3.2 1B", paramsB: 1.24, layers: 16, kvHeads: 8, headDim: 64, maxContext: 131_072 },
-  { id: "llama-3.2-3b", name: "Llama 3.2 3B", paramsB: 3.21, layers: 28, kvHeads: 8, headDim: 128, maxContext: 131_072 },
-  { id: "phi-3-mini", name: "Phi-3 Mini 3.8B (4k)", paramsB: 3.82, layers: 32, kvHeads: 32, headDim: 96, maxContext: 4096 },
-  { id: "mistral-7b", name: "Mistral 7B v0.3", paramsB: 7.25, layers: 32, kvHeads: 8, headDim: 128, maxContext: 32_768 },
-  { id: "qwen2.5-7b", name: "Qwen2.5 7B", paramsB: 7.62, layers: 28, kvHeads: 4, headDim: 128, maxContext: 32_768 },
-  { id: "llama-3.1-8b", name: "Llama 3.1 8B", paramsB: 8.03, layers: 32, kvHeads: 8, headDim: 128, maxContext: 131_072 },
-  { id: "qwen3-8b", name: "Qwen3 8B", paramsB: 8.19, layers: 36, kvHeads: 8, headDim: 128, maxContext: 32_768 },
-  { id: "gemma-2-9b", name: "Gemma 2 9B", paramsB: 9.24, layers: 42, kvHeads: 8, headDim: 256, maxContext: 8192 },
-  { id: "qwen2.5-14b", name: "Qwen2.5 14B", paramsB: 14.7, layers: 48, kvHeads: 8, headDim: 128, maxContext: 32_768 },
-  { id: "qwen2.5-32b", name: "Qwen2.5 32B", paramsB: 32.8, layers: 64, kvHeads: 8, headDim: 128, maxContext: 32_768 },
-  { id: "llama-3.1-70b", name: "Llama 3.1 70B", paramsB: 70.6, layers: 80, kvHeads: 8, headDim: 128, maxContext: 131_072 },
+  { id: "llama-3.2-1b", name: "Llama 3.2 1B", paramsB: 1.24, layers: 16, kvHeads: 8, headDim: 64, maxContext: 131_072, hfRepo: "unsloth/Llama-3.2-1B-Instruct" },
+  { id: "llama-3.2-3b", name: "Llama 3.2 3B", paramsB: 3.21, layers: 28, kvHeads: 8, headDim: 128, maxContext: 131_072, hfRepo: "unsloth/Llama-3.2-3B-Instruct" },
+  { id: "phi-3-mini", name: "Phi-3 Mini 3.8B (4k)", paramsB: 3.82, layers: 32, kvHeads: 32, headDim: 96, maxContext: 4096, hfRepo: "microsoft/Phi-3-mini-4k-instruct" },
+  { id: "mistral-7b", name: "Mistral 7B v0.3", paramsB: 7.25, layers: 32, kvHeads: 8, headDim: 128, maxContext: 32_768, hfRepo: "unsloth/mistral-7b-v0.3" },
+  { id: "qwen2.5-7b", name: "Qwen2.5 7B", paramsB: 7.62, layers: 28, kvHeads: 4, headDim: 128, maxContext: 32_768, hfRepo: "Qwen/Qwen2.5-7B-Instruct" },
+  { id: "llama-3.1-8b", name: "Llama 3.1 8B", paramsB: 8.03, layers: 32, kvHeads: 8, headDim: 128, maxContext: 131_072, hfRepo: "unsloth/Meta-Llama-3.1-8B-Instruct" },
+  { id: "qwen3-8b", name: "Qwen3 8B", paramsB: 8.19, layers: 36, kvHeads: 8, headDim: 128, maxContext: 32_768, hfRepo: "Qwen/Qwen3-8B" },
+  { id: "gemma-2-9b", name: "Gemma 2 9B", paramsB: 9.24, layers: 42, kvHeads: 8, headDim: 256, maxContext: 8192, hfRepo: "unsloth/gemma-2-9b-it" },
+  { id: "qwen2.5-14b", name: "Qwen2.5 14B", paramsB: 14.7, layers: 48, kvHeads: 8, headDim: 128, maxContext: 32_768, hfRepo: "Qwen/Qwen2.5-14B-Instruct" },
+  { id: "qwen2.5-32b", name: "Qwen2.5 32B", paramsB: 32.8, layers: 64, kvHeads: 8, headDim: 128, maxContext: 32_768, hfRepo: "Qwen/Qwen2.5-32B-Instruct" },
+  { id: "llama-3.1-70b", name: "Llama 3.1 70B", paramsB: 70.6, layers: 80, kvHeads: 8, headDim: 128, maxContext: 131_072, hfRepo: "unsloth/Meta-Llama-3.1-70B-Instruct" },
 ];
 
 /** 32768 → "32k", 131072 → "128k" (contextos locais são potências de 2). */
