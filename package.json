@@ -1,6 +1,6 @@
 {
   "name": "aspael-neurix",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "LLM token calculator: tokens, cost in USD/BRL, context window, file formats, RAG cost and local VRAM/KV cache — interactive CLI in English and Portuguese",
   "keywords": [
     "llm",
@@ -18,7 +18,10 @@
     "claude",
     "openai",
     "gemini",
-    "cli"
+    "cli",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol"
   ],
   "author": "Aspael",
   "license": "MIT",
@@ -35,7 +38,8 @@
     "node": ">=22.12"
   },
   "bin": {
-    "neurix": "dist/cli.js"
+    "neurix": "dist/cli.js",
+    "neurix-mcp": "dist/mcp.js"
   },
   "files": [
     "dist"
@@ -45,12 +49,15 @@
   },
   "scripts": {
     "dev": "node src/cli.ts",
+    "mcp": "node src/mcp.ts",
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "screenshots": "node scripts/screenshots.ts && node scripts/banner.ts",
     "prices:build": "node scripts/build-prices.ts",
     "prices:check": "node scripts/build-prices.ts --strict",
-    "prepublishOnly": "npm run typecheck && npm run build"
+    "prepublishOnly": "npm run typecheck && npm run build && npm test",
+    "test": "node --test --test-reporter=spec \"test/**/*.test.ts\"",
+    "check": "pnpm typecheck && pnpm build && pnpm test"
   },
   "devDependencies": {
     "@types/node": "24",
@@ -59,7 +66,12 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.9.0",
+    "@huggingface/tokenizers": "0.2.0",
+    "@modelcontextprotocol/sdk": "1.32.2",
     "commander": "^15.1.0",
-    "picocolors": "^1.1.1"
-  }
+    "js-tiktoken": "1.0.21",
+    "picocolors": "^1.1.1",
+    "zod": "4.6.7"
+  },
+  "packageManager": "pnpm@9.15.9"
 }

@@ -168,27 +168,29 @@ export const compactText = (s: string): string =>
 
 // ───────────── Variações ─────────────
 
-const variant = (id: FormatId, content: string): FormatVariant => ({
+const variant = (id: FormatId, content: string, count: (text: string) => number): FormatVariant => ({
   id,
   content,
   chars: content.length,
-  tokens: estimateTokens(content),
+  tokens: count(content),
   ...(id === "original" && { original: true }),
 });
 
-export function formatVariants(content: string, kind: SourceKind): FormatVariant[] {
-  const out: FormatVariant[] = [variant("original", content)];
+/** `count` conta os tokens com o tokenizer do modelo escolhido (padrão: estimativa chars/3,5). */
+export function formatVariants(content: string, kind: SourceKind, count: (text: string) => number = estimateTokens): FormatVariant[] {
+  const v = (id: FormatId, text: string): FormatVariant => variant(id, text, count);
+  const out: FormatVariant[] = [v("original", content)];
 
   if (kind === "json") {
     const data = tryJson(content);
-    if (data === undefined) return [...out, variant("compact", compactText(content))];
-    out.push(variant("jsonPretty", JSON.stringify(data, null, 2)));
-    out.push(variant("jsonMin", JSON.stringify(data)));
-    out.push(variant("yaml", toYaml(data)));
+    if (data === undefined) return [...out, v("compact", compactText(content))];
+    out.push(v("jsonPretty", JSON.stringify(data, null, 2)));
+    out.push(v("jsonMin", JSON.stringify(data)));
+    out.push(v("yaml", toYaml(data)));
     const table = asTable(data);
     if (table) {
-      out.push(variant("csv", toCsv(table)));
-      out.push(variant("md", toMarkdownTable(table)));
+      out.push(v("csv", toCsv(table)));
+      out.push(v("md", toMarkdownTable(table)));
     }
     return out;
   }
@@ -196,13 +198,13 @@ export function formatVariants(content: string, kind: SourceKind): FormatVariant
   if (kind === "csv") {
     const rows = parseCsv(content);
     if (rows.length === 0) return out;
-    out.push(variant("jsonPretty", JSON.stringify(rows, null, 2)));
-    out.push(variant("jsonMin", JSON.stringify(rows)));
-    out.push(variant("yaml", toYaml(rows)));
-    out.push(variant("md", toMarkdownTable(rows)));
+    out.push(v("jsonPretty", JSON.stringify(rows, null, 2)));
+    out.push(v("jsonMin", JSON.stringify(rows)));
+    out.push(v("yaml", toYaml(rows)));
+    out.push(v("md", toMarkdownTable(rows)));
     return out;
   }
 
-  out.push(variant("compact", compactText(content)));
+  out.push(v("compact", compactText(content)));
   return out;
 }

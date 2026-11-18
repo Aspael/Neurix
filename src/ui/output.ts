@@ -4,11 +4,13 @@ import { computeCost, type CostBreakdown } from "../core/cost.ts";
 import type { FormatVariant } from "../core/formats.ts";
 import { formatLocalContext, KV_PRECISIONS, QUANTIZATIONS, type LocalEstimate, type LocalInput } from "../core/local.ts";
 import type { RagInput, RagResult } from "../core/rag.ts";
-import { estimateTokens } from "../core/tokens.ts";
+import { countersFor, type Counter } from "../core/tokens.ts";
 import { getUsdBrl, toBrl, type ExchangeRate } from "../currency/exchange.ts";
 import { formatBrl, formatContext, formatInt, formatNum, formatUsd } from "../currency/format.ts";
 import { locale, t } from "../i18n/index.ts";
 import type { ModelPrice } from "../types/models.ts";
+import { compareReport, detailReport, formatsReport, ragReport } from "../report/builders.ts";
+import { setLastReport } from "../report/report.ts";
 
 export interface OutputOptions {
   usd?: number;
@@ -43,12 +45,12 @@ export function rateLine(rate: ExchangeRate, iof: number): string {
 export const brl = (usd: number, rate: ExchangeRate | null, iof: number): string =>
   rate ? formatBrl(toBrl(usd, rate, iof)) : "—";
 
-const money = (usd: number, rate: ExchangeRate | null, iof: number): string =>
+export const money = (usd: number, rate: ExchangeRate | null, iof: number): string =>
   `${formatUsd(usd)}  ${pc.dim("|")}  ${brl(usd, rate, iof)}`;
 
 // ───────────── Blocos básicos ─────────────
 
-const LABEL_W = 18;
+export const LABEL_W = 18;
 export const sep = (): void => console.log(pc.dim("─".repeat(56)));
 export const title = (s: string): void => {
   console.log();
@@ -56,7 +58,7 @@ export const title = (s: string): void => {
   sep();
 };
 
-const termWidth = (): number => Math.min(100, process.stdout.columns || 80);
+export const termWidth = (): number => Math.min(100, process.stdout.columns || 80);
 
 export function wrap(text: string, width: number): string[] {
   const lines: string[] = [];
@@ -92,16 +94,18 @@ const gb = (gib: number): string => `${formatNum(gib, 1, 1)} GB`;
 
 // Largura visível ignorando códigos de cor ANSI.
 // biome-ignore lint/suspicious/noControlCharactersInRegex: remove sequências ANSI
-const visible = (s: string): number => s.replace(/\x1b\[[0-9;]*m/g, "").length;
-const pad = (s: string, w: number, right = false): string => {
+export const visible = (s: string): number => s.replace(/\x1b\[[0-9;]*m/g, "").length;
+export const pad = (s: string, w: number, right = false): string => {
   const fill = " ".repeat(Math.max(0, w - visible(s)));
   return right ? fill + s : s + fill;
 };
 
-function table(head: string[], body: string[][]): void {
+/** Tabela simples: 1ª coluna (e as de `left`) alinhadas à esquerda, o resto à direita. */
+export function table(head: string[], body: string[][], left: number[] = []): void {
   const widths = head.map((h, i) => Math.max(visible(h), ...body.map((r) => visible(r[i] ?? ""))));
-  console.log(head.map((h, i) => pc.dim(pad(h, widths[i] ?? 0, i > 0))).join("  "));
-  for (const r of body) console.log(r.map((cell, i) => pad(cell, widths[i] ?? 0, i > 0)).join("  "));
+  const right = (i: number): boolean => i > 0 && !left.includes(i);
+  console.log(head.map((h, i) => pc.dim(pad(h, widths[i] ?? 0, right(i)))).join("  "));
+  for (const r of body) console.log(r.map((cell, i) => pad(cell, widths[i] ?? 0, right(i))).join("  "));
 }
 
 function contextLine(model: ModelPrice, c: CostBreakdown): string {
@@ -113,6 +117,40 @@ function contextLine(model: ModelPrice, c: CostBreakdown): string {
   return c.fitsContext ? pc.green(L.fits(used, pctTxt)) : pc.red(L.notFits(used));
 }
 
+// ───────────── Contagem de tokens ─────────────
+
+/** "24" quando exato, "~27" quando estimado. */
+export const tokenNum = (n: number, c: Counter): string => (c.exact ? formatInt(n) : `~${formatInt(n)}`);
+
+/** Valor da linha "Tokens": número + de onde veio a contagem. */
+export function tokenValue(n: number, c: Counter): string {
+  const C = t().count;
+  if (c.exact) return `${pc.bold(formatInt(n))} ${pc.green(`✓ ${C.exact(c.source ?? "")}`)}`;
+  if (c.method === "claude") return `~${formatInt(n)} ${pc.yellow(`(${C.claude})`)}`;
+  if (c.method === "gemini") return `~${formatInt(n)} ${pc.yellow(`(${C.gemini})`)}`;
+  return `~${formatInt(n)} ${pc.dim(`(${C.estimate})`)}`;
+}
+
+/** Explicação do método (modo explicado) somada ao significado de "token". */
+const tokenWhy = (c: Counter): string => `${t().why.tokens} ${t().count.why[c.method]}`;
+
+/** Avisos sobre a contagem: motivos da estimativa (Claude/Gemini) e falha ao carregar o tokenizer. */
+export function countNotes(counters: Counter[]): void {
+  const C = t().count;
+  const seen = new Set<string>();
+  for (const c of counters) {
+    if (c.fallback && !seen.has(`fb:${c.fallback}`)) {
+      seen.add(`fb:${c.fallback}`);
+      console.log(pc.yellow(`\n⚠ ${C.fallback(c.fallback)}`));
+    }
+    if ((c.method === "claude" || c.method === "gemini") && !seen.has(c.method)) {
+      seen.add(c.method);
+      console.log();
+      for (const l of wrap(`ⓘ ${C.why[c.method]}`, termWidth() - 4)) console.log(pc.dim(`  ${l}`));
+    }
+  }
+}
+
 // ───────────── Texto: um modelo ─────────────
 
 export function printDetail(
@@ -121,13 +159,14 @@ export function printDetail(
   c: CostBreakdown,
   rate: ExchangeRate | null,
   opts: OutputOptions,
+  counter: Counter,
 ): void {
   const L = t().out;
   const W = t().why;
   const e = opts.explain;
   title(L.estimate);
   row(L.text, L.chars(formatInt(text.length)), W.chars, e);
-  row(L.tokens, `~${formatInt(c.inputTokens)} ${pc.dim(L.estimateNote)}`, W.tokens, e);
+  row(L.tokens, tokenValue(c.inputTokens, counter), tokenWhy(counter), e);
   row(L.model, `${model.name} ${pc.dim(`(${model.id})`)}`, W.model, e);
   row(L.pricePer1M, L.priceLine(formatUsd(c.price.input), formatUsd(c.price.output)), undefined, e);
   sep();
@@ -143,31 +182,37 @@ export function printDetail(
   row(L.context, contextLine(model, c), W.context, e);
   if (rate) row(L.fx, pc.dim(rateLine(rate, opts.iof)), W.fx, e);
   if (model.source !== "litellm") row("", pc.yellow(L.unofficial(model.source)), W.unofficial, e);
+  countNotes([counter]);
+  setLastReport(detailReport(text, model, c, counter, rate, opts.iof));
   console.log();
 }
 
 // ───────────── Texto: todos os modelos ─────────────
 
-export function printTable(
+export async function printTable(
   text: string,
   models: ModelPrice[],
   outTokens: number,
   rate: ExchangeRate | null,
   opts: OutputOptions,
-): void {
+): Promise<void> {
   const L = t().out;
   const W = t().why;
-  const inputTokens = estimateTokens(text);
+  const counters = await countersFor(models);
   const rows = models
-    .map((m) => ({ m, c: computeCost(m, inputTokens, outTokens) }))
+    .map((m) => {
+      const counter = counters.get(m.id) as Counter;
+      return { m, counter, c: computeCost(m, counter.count(text), outTokens) };
+    })
     .sort((a, b) => a.c.totalUsd - b.c.totalUsd);
 
   console.log();
-  console.log(`${pc.bold(L.compare)}  ${pc.dim(L.compareSub(formatInt(text.length), formatInt(inputTokens), formatInt(outTokens)))}`);
+  console.log(`${pc.bold(L.compare)}  ${pc.dim(L.compareSub(formatInt(text.length), formatInt(outTokens)))}`);
   table(
     L.compareHead,
-    rows.map(({ m, c }) => [
+    rows.map(({ m, c, counter }) => [
       m.name + (m.source !== "litellm" ? pc.yellow(" *") : ""),
+      counter.exact ? pc.green(`${formatInt(c.inputTokens)} ✓`) : `~${formatInt(c.inputTokens)}`,
       formatUsd(c.price.input),
       formatUsd(c.price.output),
       formatUsd(c.totalUsd),
@@ -177,6 +222,9 @@ export function printTable(
   );
   if (rate) console.log(pc.dim(`\n${L.fx} ${rateLine(rate, opts.iof)}`));
   if (rows.some(({ m }) => m.source !== "litellm")) console.log(pc.dim(`${pc.yellow("*")} ${L.orNote}`));
+  console.log(pc.dim(t().count.legend));
+  countNotes(rows.map((r) => r.counter));
+  setLastReport(compareReport(text.length, rows, outTokens, rate, opts.iof));
   if (opts.explain) {
     console.log();
     explainBlock(`${L.explainPrices} ${W.inputCost}`, true);
@@ -196,6 +244,7 @@ export function printFormats(
   outTokens: number,
   rate: ExchangeRate | null,
   opts: OutputOptions,
+  counter: Counter,
 ): void {
   const L = t().out;
   const F = t().formats;
@@ -215,7 +264,7 @@ export function printFormats(
       return [
         (i === 0 ? pc.green("★ ") : "  ") + name(v),
         formatInt(v.chars),
-        `~${formatInt(v.tokens)}`,
+        tokenNum(v.tokens, counter),
         formatUsd(cost),
         brl(cost, rate, opts.iof),
         diffTxt,
@@ -240,6 +289,9 @@ export function printFormats(
     explainBlock(L.vsOriginal(formatInt(outTokens)), true);
     explainBlock(L.formatWarning, true);
   }
+  console.log(`\n${pc.dim(L.tokens)} ${tokenValue(base.tokens, counter)}`);
+  countNotes([counter]);
+  setLastReport(formatsReport(file, variants, model, outTokens, counter, rate, opts.iof));
   console.log();
 }
 
@@ -252,6 +304,7 @@ export function printRag(
   r: RagResult,
   rate: ExchangeRate | null,
   opts: OutputOptions,
+  counter: Counter,
 ): void {
   const L = t().out;
   const W = t().why;
@@ -262,7 +315,7 @@ export function printRag(
   title(`${L.ragTitle}  ${pc.dim(`${file} · ${model.name}`)}`);
   explainBlock(W.rag, e);
   if (e) console.log();
-  row(L.doc, `~${formatInt(input.docTokens)} tokens`, W.tokens, e);
+  row(L.doc, tokenValue(input.docTokens, counter), tokenWhy(counter), e);
   row(L.chunk, `${formatInt(input.chunkSize)} tokens`, W.chunkSize, e);
   row(L.overlap, `${formatInt(input.overlap)} tokens`, W.overlap, e);
   row(L.pieces, L.piecesVal(formatInt(r.chunks)), W.chunks, e);
@@ -304,12 +357,19 @@ export function printRag(
   if (r.full.fitsContext === false) console.log(pc.yellow(L.mustRag));
   explainBlock(L.tradeoff, e);
   if (rate) row(L.fx, pc.dim(rateLine(rate, opts.iof)), W.fx, e);
+  countNotes([counter]);
+  setLastReport(ragReport(file, model, input, r, counter, rate, opts.iof));
   console.log();
 }
 
 // ───────────── Modelo local ─────────────
 
-export function printLocal(input: LocalInput, est: LocalEstimate, textTokens: number | null, opts: OutputOptions): void {
+export function printLocal(
+  input: LocalInput,
+  est: LocalEstimate,
+  text: { tokens: number; counter: Counter } | null,
+  opts: OutputOptions,
+): void {
   const D = t();
   const L = D.out;
   const W = D.why;
@@ -318,7 +378,7 @@ export function printLocal(input: LocalInput, est: LocalEstimate, textTokens: nu
   const parallel = input.parallel ?? 1;
 
   title(`${L.localTitle}  ${pc.dim(model.name)}`);
-  if (textTokens !== null) row(L.yourText, `~${formatInt(textTokens)} tokens`, W.tokens, e);
+  if (text) row(L.yourText, tokenValue(text.tokens, text.counter), tokenWhy(text.counter), e);
   row(L.cost, pc.green(L.costVal), W.localCost, e);
   row(L.params, L.paramsVal(formatNum(model.paramsB)), W.params, e);
   row(L.quant, `${quant.id} ${pc.dim(L.quantVal(formatNum(quant.bits, 1), D.quantHints[quant.id] ?? ""))}`, W.quant, e);
@@ -369,6 +429,7 @@ export function printLocal(input: LocalInput, est: LocalEstimate, textTokens: nu
   const note = D.modelNotes[model.id];
   if (note) console.log(pc.dim(`\n${L.note(note)}`));
   console.log(pc.dim(`\n${L.approx}`));
+  if (text) countNotes([text.counter]);
   console.log();
 }
 

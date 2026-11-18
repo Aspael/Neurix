@@ -1,0 +1,70 @@
+# CD: publica no npm e cria a release no GitHub quando uma tag de versão é enviada.
+#
+#   1. suba a versão:   npm version patch   (ou minor / major) → cria o commit e a tag vX.Y.Z
+#   2. envie:           git push --follow-tags
+#
+# Precisa do segredo NPM_TOKEN (token "Automation" do npmjs.com) em
+# Settings → Secrets and variables → Actions.
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write # criar a release no GitHub
+  id-token: write # npm provenance (selo de origem verificável no npmjs.com)
+
+env:
+  NEURIX_OFFLINE: "1"
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: npm
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Tag must match package.json version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG="$(node -p "require('./package.json').version")"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "::error::A tag v$TAG não bate com a versão do package.json ($PKG)."
+            exit 1
+          fi
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm build
+      - run: pnpm test
+
+      - name: Publish to npm
+        # pré-release (ex.: v1.2.0-beta.1) vai para a tag "next" em vez de "latest"
+        run: |
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then TAG=next; else TAG=latest; fi
+          npm publish --provenance --access public --tag "$TAG" --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: GitHub release
+        run: |
+          npm pack
+          PRE=""
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then PRE="--prerelease"; fi
+          gh release create "$GITHUB_REF_NAME" aspael-neurix-*.tgz --title "$GITHUB_REF_NAME" --generate-notes $PRE
+        env:
+          GH_TOKEN: ${{ github.token }}

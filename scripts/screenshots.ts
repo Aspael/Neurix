@@ -37,6 +37,8 @@ if (process.argv[2] === "--render") {
     if (what === "formats") {
       const { formatVariants } = await import("../src/core/formats.ts");
       const { printFormats } = await import("../src/ui/output.ts");
+      const { counterFor } = await import("../src/core/tokens.ts");
+      const counter = await counterFor(model);
       const cities = ["São Paulo", "Rio de Janeiro", "Manaus", "Recife", "Curitiba"];
       const data = Array.from({ length: 40 }, (_, i) => ({
         id: i + 1,
@@ -45,10 +47,11 @@ if (process.argv[2] === "--render") {
         active: i % 3 !== 0,
         balance: Math.round(i * 137.5) / 10,
       }));
-      printFormats("customers.json", formatVariants(JSON.stringify(data, null, 4), "json"), model, 300, rate, opts);
+      printFormats("customers.json", formatVariants(JSON.stringify(data, null, 4), "json", counter.count), model, 300, rate, opts, counter);
     } else if (what === "rag") {
       const { simulateRag } = await import("../src/core/rag.ts");
       const { printRag } = await import("../src/ui/output.ts");
+      const { counterFor } = await import("../src/core/tokens.ts");
       const input = {
         docTokens: 180_000,
         chunkSize: 512,
@@ -60,7 +63,7 @@ if (process.argv[2] === "--render") {
         queriesPerMonth: 1000,
         embedPricePer1M: 0.02,
       };
-      printRag("manual.pdf.txt", model, input, simulateRag(model, input), rate, opts);
+      printRag("manual.pdf.txt", model, input, simulateRag(model, input), rate, opts, await counterFor(model));
     }
   }
   process.exit(0);
@@ -443,7 +446,7 @@ const SHOTS: Shot[] = [
   },
   {
     file: "estimate",
-    title: () => "neurix \"…\" -m claude-sonnet-5-5 --explicar",
+    title: () => "neurix \"…\" -m claude-sonnet-5-5 --explain",
     ansi: (lang, home) => run([cli, SAMPLE[lang], "-m", "claude-sonnet-5-5", "-e"], lang, home),
   },
   {
