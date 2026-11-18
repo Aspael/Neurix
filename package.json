@@ -1,6 +1,6 @@
 {
   "name": "aspael-neurix",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "LLM token calculator: tokens, cost in USD/BRL, context window, file formats, RAG cost and local VRAM/KV cache — interactive CLI in English and Portuguese",
   "keywords": [
     "llm",
@@ -38,6 +38,7 @@
     "node": ">=22.12"
   },
   "bin": {
+    "aspael-neurix": "dist/cli.js",
     "neurix": "dist/cli.js",
     "neurix-mcp": "dist/mcp.js"
   },
