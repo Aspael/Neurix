@@ -61,9 +61,9 @@
     "check": "pnpm typecheck && pnpm build && pnpm test"
   },
   "devDependencies": {
-    "@types/node": "24",
+    "@types/node": "26",
     "tsup": "^9.0.0",
-    "typescript": "5.9"
+    "typescript": "7.0"
   },
   "dependencies": {
     "@clack/prompts": "^1.9.0",

@@ -42,9 +42,9 @@ jobs:
       MODE: ${{ (github.event.inputs.mode != '' && github.event.inputs.mode != 'default') && github.event.inputs.mode || vars.PRICES_MODE || 'commit' }}
       NEURIX_OFFLINE: "1" # os testes usam a tabela do repositório, não a publicada
     steps:
-      - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
@@ -95,7 +95,7 @@ jobs:
 
       - name: Open pull request
         if: steps.diff.outputs.changed == 'true' && env.MODE == 'pr'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: chore/update-prices
           delete-branch: true
