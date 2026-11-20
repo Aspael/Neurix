@@ -1,0 +1,218 @@
+{
+  "name": "neurix",
+  "displayName": "Neurix — LLM Token Calculator",
+  "description": "Tokens, cost in USD/BRL, context window, cheapest format, RAG, budget, cost alerts and local-model VRAM — right inside VS Code. English and Portuguese.",
+  "version": "0.2.1",
+  "publisher": "aspael",
+  "author": "Aspael",
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#1e1b2e",
+    "theme": "dark"
+  },
+  "homepage": "https://github.com/Aspael/Neurix#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aspael/Neurix.git",
+    "directory": "vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/Aspael/Neurix/issues"
+  },
+  "engines": {
+    "vscode": "^1.101.0"
+  },
+  "categories": [
+    "AI",
+    "Programming Languages",
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "llm",
+    "tokens",
+    "token counter",
+    "tokenizer",
+    "cost",
+    "pricing",
+    "context window",
+    "rag",
+    "vram",
+    "ollama",
+    "claude",
+    "openai",
+    "gemini",
+    "mcp"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      { "command": "neurix.openPanel", "title": "Open Neurix", "category": "Neurix", "icon": "$(pulse)" },
+      { "command": "neurix.openCli", "title": "Open interactive menu (terminal)", "category": "Neurix", "icon": "$(terminal)" },
+      { "command": "neurix.selectModel", "title": "Select default model", "category": "Neurix" },
+      { "command": "neurix.setLanguage", "title": "Idioma / Language", "category": "Neurix" },
+      { "command": "neurix.toggleStatusBar", "title": "Toggle token counter in status bar", "category": "Neurix" },
+      { "command": "neurix.countTokens", "title": "Count tokens", "category": "Neurix" },
+      { "command": "neurix.countFile", "title": "Count tokens and cost of file", "category": "Neurix" },
+      { "command": "neurix.estimateCost", "title": "Estimate cost of one call", "category": "Neurix" },
+      { "command": "neurix.compareModels", "title": "Compare models", "category": "Neurix" },
+      { "command": "neurix.recommendModel", "title": "Recommend the cheapest model", "category": "Neurix" },
+      { "command": "neurix.listModels", "title": "List models and prices", "category": "Neurix" },
+      { "command": "neurix.exchangeRate", "title": "USD → BRL exchange rate", "category": "Neurix" },
+      { "command": "neurix.optimizePrompt", "title": "Optimize prompt (find wasted tokens)", "category": "Neurix" },
+      { "command": "neurix.suggestFormat", "title": "Suggest the cheapest data format", "category": "Neurix" },
+      { "command": "neurix.chunkDocument", "title": "Chunk document for RAG", "category": "Neurix" },
+      { "command": "neurix.ragCost", "title": "RAG vs whole document cost", "category": "Neurix" },
+      { "command": "neurix.analyzeFolder", "title": "Count tokens per file in folder", "category": "Neurix" },
+      { "command": "neurix.promptCache", "title": "Prompt caching savings", "category": "Neurix" },
+      { "command": "neurix.budget", "title": "Neurix Budget (monthly cap)", "category": "Neurix" },
+      { "command": "neurix.checkCost", "title": "Cost alert (is this over the limit?)", "category": "Neurix" },
+      { "command": "neurix.detectHardware", "title": "Detect GPU, VRAM and RAM", "category": "Neurix" },
+      { "command": "neurix.installedModels", "title": "Installed local models (Ollama / LM Studio)", "category": "Neurix" },
+      { "command": "neurix.checkLocalFit", "title": "Does a local model fit my GPU?", "category": "Neurix" },
+      { "command": "neurix.findLocalModels", "title": "Find local models that fit my GPU", "category": "Neurix" },
+      { "command": "neurix.importHfModel", "title": "Import model from Hugging Face", "category": "Neurix" },
+      { "command": "neurix.localVsApi", "title": "Local vs API: is it worth it?", "category": "Neurix" },
+      { "command": "neurix.benchmarkOllama", "title": "Real benchmark with Ollama", "category": "Neurix" },
+      { "command": "neurix.explainTerm", "title": "Explain an LLM term (glossary)", "category": "Neurix" },
+      { "command": "neurix.openTool", "title": "Open tool", "category": "Neurix" },
+      { "command": "neurix.refreshTools", "title": "Refresh", "category": "Neurix", "icon": "$(refresh)" }
+    ],
+    "submenus": [
+      { "id": "neurix.editor", "label": "Neurix" },
+      { "id": "neurix.explorer", "label": "Neurix" }
+    ],
+    "menus": {
+      "editor/context": [
+        { "submenu": "neurix.editor", "group": "neurix@1" }
+      ],
+      "neurix.editor": [
+        { "command": "neurix.countTokens", "group": "1_count@1" },
+        { "command": "neurix.estimateCost", "group": "1_count@2" },
+        { "command": "neurix.compareModels", "group": "1_count@3" },
+        { "command": "neurix.recommendModel", "group": "1_count@4" },
+        { "command": "neurix.optimizePrompt", "group": "2_prompt@1" },
+        { "command": "neurix.suggestFormat", "group": "2_prompt@2" },
+        { "command": "neurix.chunkDocument", "group": "2_prompt@3" },
+        { "command": "neurix.ragCost", "group": "2_prompt@4" },
+        { "command": "neurix.promptCache", "group": "2_prompt@5" },
+        { "command": "neurix.checkCost", "group": "3_budget@1" },
+        { "command": "neurix.budget", "group": "3_budget@2" },
+        { "command": "neurix.checkLocalFit", "group": "4_local@1" }
+      ],
+      "explorer/context": [
+        { "submenu": "neurix.explorer", "group": "neurix@1" }
+      ],
+      "neurix.explorer": [
+        { "command": "neurix.countFile", "when": "!explorerResourceIsFolder", "group": "1@1" },
+        { "command": "neurix.optimizePrompt", "when": "!explorerResourceIsFolder", "group": "1@2" },
+        { "command": "neurix.suggestFormat", "when": "!explorerResourceIsFolder", "group": "1@3" },
+        { "command": "neurix.chunkDocument", "when": "!explorerResourceIsFolder", "group": "1@4" },
+        { "command": "neurix.checkCost", "when": "!explorerResourceIsFolder", "group": "1@5" },
+        { "command": "neurix.analyzeFolder", "when": "explorerResourceIsFolder", "group": "1@1" }
+      ],
+      "view/title": [
+        { "command": "neurix.openPanel", "when": "view == neurix.tools", "group": "navigation@1" },
+        { "command": "neurix.openCli", "when": "view == neurix.tools", "group": "navigation@2" }
+      ],
+      "commandPalette": [
+        { "command": "neurix.openTool", "when": "false" },
+        { "command": "neurix.refreshTools", "when": "false" }
+      ]
+    },
+    "keybindings": [
+      { "command": "neurix.countTokens", "key": "ctrl+alt+t", "mac": "cmd+alt+t", "when": "editorTextFocus" },
+      { "command": "neurix.compareModels", "key": "ctrl+alt+m", "mac": "cmd+alt+m", "when": "editorTextFocus" }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        { "id": "neurix", "title": "Neurix", "icon": "media/activity.svg" }
+      ]
+    },
+    "views": {
+      "neurix": [
+        { "id": "neurix.tools", "name": "Tools", "icon": "media/activity.svg" }
+      ]
+    },
+    "mcpServerDefinitionProviders": [
+      { "id": "neurix.mcp", "label": "Neurix" }
+    ],
+    "configuration": {
+      "title": "Neurix",
+      "properties": {
+        "neurix.language": {
+          "type": "string",
+          "enum": ["auto", "pt", "en"],
+          "enumDescriptions": ["Follow VS Code's display language", "Português", "English"],
+          "default": "auto",
+          "description": "Language of Neurix results and UI."
+        },
+        "neurix.defaultModel": {
+          "type": "string",
+          "default": "claude-sonnet-5-5",
+          "description": "Model used by the status bar counter and pre-filled in tools (see 'Neurix: List models and prices')."
+        },
+        "neurix.outputTokens": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 300,
+          "description": "Expected answer size in tokens, used in cost estimates."
+        },
+        "neurix.iofPct": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0,
+          "description": "Brazilian IOF tax on international card purchases, in % (e.g. 3.5). Applied to BRL values."
+        },
+        "neurix.usdBrl": {
+          "type": ["number", "null"],
+          "default": null,
+          "description": "Manual USD→BRL rate. Leave empty to fetch the live rate (cached for 1 hour)."
+        },
+        "neurix.statusBar.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show tokens and cost of the current selection (or file) in the status bar."
+        },
+        "neurix.statusBar.showCost": {
+          "type": "boolean",
+          "default": true,
+          "description": "Also show the estimated cost in the status bar."
+        },
+        "neurix.statusBar.maxFileSizeKB": {
+          "type": "integer",
+          "default": 2048,
+          "description": "Files bigger than this are not counted automatically in the status bar."
+        },
+        "neurix.offline": {
+          "type": "boolean",
+          "default": false,
+          "description": "Don't download price updates or tokenizers (uses the prices bundled with the extension)."
+        },
+        "neurix.mcp.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Offer the Neurix MCP server (23 tools) to Copilot agent mode and other MCP clients in VS Code."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "watch": "node scripts/build.mjs --watch",
+    "typecheck": "tsc --noEmit -p .",
+    "package": "node scripts/build.mjs --production && vsce package --no-dependencies",
+    "publish": "node scripts/build.mjs --production && vsce publish --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "24",
+    "@types/vscode": "1.101.0",
+    "@vscode/vsce": "4.1.1",
+    "esbuild": "0.28.2",
+    "typescript": "5.9"
+  }
+}

@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 256 256">
+  <title>Neurix for VS Code</title>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#22d3ee"/>
+      <stop offset=".5" stop-color="#8b5cf6"/>
+      <stop offset="1" stop-color="#f472b6"/>
+    </linearGradient>
+    <radialGradient id="bg" cx=".5" cy=".38" r=".75">
+      <stop offset="0" stop-color="#2a1f4d"/>
+      <stop offset="1" stop-color="#0f0f1a"/>
+    </radialGradient>
+    <linearGradient id="badge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8b5cf6"/>
+      <stop offset="1" stop-color="#f472b6"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
+      <feOffset dy="2" result="o"/>
+      <feComponentTransfer><feFuncA type="linear" slope=".6"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="256" height="256" rx="56" fill="url(#bg)"/>
+  <rect x="3" y="3" width="250" height="250" rx="53" fill="none" stroke="url(#g)" stroke-opacity=".35" stroke-width="2"/>
+
+  <!-- cérebro -->
+  <g transform="translate(22 30) scale(.94)">
+    <g fill="url(#g)" fill-opacity=".1" stroke="url(#g)" stroke-width="7" stroke-linejoin="round">
+      <path d="M94 12 C66 -2 32 8 24 34 C4 40 -2 70 12 86 C0 104 10 134 36 138 C44 158 76 164 94 148 Z"/>
+      <path d="M106 12 C134 -2 168 8 176 34 C196 40 202 70 188 86 C200 104 190 134 164 138 C156 158 124 164 106 148 Z"/>
+    </g>
+    <rect x="94" y="150" width="12" height="22" rx="5" fill="url(#g)"/>
+    <g fill="none" stroke="#67e8f9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity=".8">
+      <path d="M44 48 L72 38 L82 70 L48 86 L62 116 L84 108"/>
+      <path d="M156 48 L128 38 L118 70 L152 86 L138 116 L116 108"/>
+      <path d="M82 70 L118 70"/>
+      <path d="M84 108 L116 108"/>
+    </g>
+    <g fill="#fef08a" filter="url(#glow)">
+      <circle cx="44" cy="48" r="6"/><circle cx="72" cy="38" r="5"/><circle cx="82" cy="70" r="6.5"/>
+      <circle cx="48" cy="86" r="5"/><circle cx="62" cy="116" r="5.5"/><circle cx="84" cy="108" r="6"/>
+      <circle cx="156" cy="48" r="6"/><circle cx="128" cy="38" r="5"/><circle cx="118" cy="70" r="6.5"/>
+      <circle cx="152" cy="86" r="5"/><circle cx="138" cy="116" r="5.5"/><circle cx="116" cy="108" r="6"/>
+    </g>
+  </g>
+
+  <!-- selo de código/tokens: { } -->
+  <g filter="url(#shadow)">
+    <rect x="160" y="168" width="78" height="64" rx="18" fill="url(#badge)"/>
+    <g fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M186 184 C178 184 178 190 178 194 C178 198 176 200 172 200 C176 200 178 202 178 206 C178 210 178 216 186 216"/>
+      <path d="M212 184 C220 184 220 190 220 194 C220 198 222 200 226 200 C222 200 220 202 220 206 C220 210 220 216 212 216"/>
+    </g>
+    <circle cx="199" cy="200" r="4.5" fill="#fef08a"/>
+  </g>
+</svg>
