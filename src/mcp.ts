@@ -155,7 +155,8 @@ const outputTokensArg = z
 
 // ───────────── Servidor ─────────────
 
-export async function startMcpServer(): Promise<void> {
+/** Cria o servidor com todas as tools registradas, sem conectar transporte (usado também pela extensão VS Code). */
+export async function createMcpServer(): Promise<McpServer> {
   await loadLang();
   dataset = await loadPrices(process.env.NEURIX_PRICES);
 
@@ -1564,6 +1565,11 @@ export async function startMcpServer(): Promise<void> {
     },
   );
 
+  return server;
+}
+
+export async function startMcpServer(): Promise<void> {
+  const server = await createMcpServer();
   await server.connect(new StdioServerTransport());
   console.error(`Neurix MCP ${pkg.version} rodando (stdio).`);
 }
